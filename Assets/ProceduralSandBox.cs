@@ -10,19 +10,21 @@ public class ProceduralSandBox : MonoBehaviour
 {
     public Texture2D heightMap;
     public Texture2D colorMap;
-    public float maxHeight;
-    public float cubeSize;
+
     [Range(0.25f, 5f)]
     public float animationSpeed;
-
     public Gradient gradient;
     public AnimationCurve animCurve;
-
-    public TextMeshProUGUI txt;
 
     private MeshRenderer meshRenderer;
     private MeshFilter meshFilter;
     private Mesh mesh;
+
+    [Header("SandBox Properties")]
+    public int mesh_width = 256;
+    public int mesh_height = 256;
+    public float cube_size = 1;
+    public float cube_maxHeight = 8;
 
     Vector3[] points;
     Vector3[] vertices;
@@ -31,16 +33,16 @@ public class ProceduralSandBox : MonoBehaviour
     Color[] colors;
     int[] triangles;
 
-    private void CreatePoints(float size = 1f)
+    private void CreatePoints(float height = 1f)
     {
         Vector3 p0 = new Vector3(0, 0, 0);
-        Vector3 p1 = new Vector3(cubeSize, 0, 0);
-        Vector3 p2 = new Vector3(0, size + cubeSize, 0);
-        Vector3 p3 = new Vector3(cubeSize, size + cubeSize, 0);
-        Vector3 p4 = new Vector3(0, 0, cubeSize);
-        Vector3 p5 = new Vector3(cubeSize, 0, cubeSize);
-        Vector3 p6 = new Vector3(0, size + cubeSize, cubeSize);
-        Vector3 p7 = new Vector3(cubeSize, size + cubeSize, cubeSize);
+        Vector3 p1 = new Vector3(cube_size, 0, 0);
+        Vector3 p2 = new Vector3(0, height + cube_size, 0);
+        Vector3 p3 = new Vector3(cube_size, height + cube_size, 0);
+        Vector3 p4 = new Vector3(0, 0, cube_size);
+        Vector3 p5 = new Vector3(cube_size, 0, cube_size);
+        Vector3 p6 = new Vector3(0, height + cube_size, cube_size);
+        Vector3 p7 = new Vector3(cube_size, height + cube_size, cube_size);
 
         points = new Vector3[] { p0, p1, p2, p3, p4, p5, p6, p7 };
     }
@@ -130,8 +132,8 @@ public class ProceduralSandBox : MonoBehaviour
 
     private void CreateSandBox()
     {
-        int w = heightMap.width;
-        int h = heightMap.height;
+        int w = mesh_width;
+        int h = mesh_height;
         int cubeElements = w * h * 30;
 
         vertices = new Vector3[cubeElements];
@@ -147,14 +149,14 @@ public class ProceduralSandBox : MonoBehaviour
         {
             for (int j = 0; j < w; j++)
             {
-                currentPos = new Vector3(j * cubeSize, 0, i * cubeSize);
+                currentPos = new Vector3(j * cube_size, 0, i * cube_size);
 
                 //Set Size (width) of the cube
-                CreatePoints(heightMap.GetPixel(j, i).r * maxHeight);
+                CreatePoints(heightMap.GetPixel(j, i).r * cube_maxHeight);
 
                 CreateVertices(currentPos).CopyTo(vertices, cubeElementIndex);
                 CreateNormals().CopyTo(normals, cubeElementIndex);
-
+                
                 if (colorMap == null)
                 {
                     CreateColors(gradient.Evaluate(heightMap.GetPixel(j, i).r)).CopyTo(colors, cubeElementIndex);
@@ -261,14 +263,14 @@ public class ProceduralSandBox : MonoBehaviour
 
     private void Init()
     {
-        maxHeight = maxHeight <= 0 ? 1 : maxHeight;
-        cubeSize = cubeSize <= 0 ? 1 : cubeSize;
+        cube_maxHeight = cube_maxHeight <= 0 ? 1 : cube_maxHeight;
+        cube_size = cube_size <= 0 ? 1 : cube_size;
 
         meshFilter = GetComponent<MeshFilter>();
         mesh = meshFilter.mesh;
-
+        
         meshRenderer = GetComponent<MeshRenderer>();
-        meshRenderer.material = new Material(Shader.Find("Particles/Standard Surface"));
+        meshRenderer.material = new Material(Shader.Find("Custom/VertexColorShader"));
     }
     
     void Update()
