@@ -277,7 +277,6 @@ public class ProceduralSandBox : MonoBehaviour
         CreateByTexture();
 
         GameObject[] sampleObjects = SandBoxData.LoadSamples(packagePath);
-        //NAO ESTAO APARECENDO OS MODELOS 3D DAS PANORAMICAS MESMO CARREGANDO CORRETAMENTE
         GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(packagePath);
     }
     

@@ -261,13 +261,15 @@ public class SandBoxData : ScriptableObject
 
     private static GameObject LoadPanormicImage(string name, string path)
     {
-        GameObject go = Resources.Load("InvertedSphere", typeof(GameObject)) as GameObject;
+        GameObject go = Instantiate(Resources.Load("InvertedSphere") as GameObject);
         go.name = name;
 
-        //Material mat = new Material(Shader.Find("Unlit/Texture"));
-        //mat.SetTextureScale("_MainTex", new Vector2(-1, 1));
+        Material mat = new Material(Shader.Find("Unlit/Texture"));
 
-        //go.GetComponentInChildren<MeshRenderer>().material = mat;
+        mat.mainTexture = LoadImageAsTexture(path);
+        mat.SetTextureScale("_MainTex", new Vector2(-1, 1));
+
+        go.GetComponent<MeshRenderer>().material = mat;
 
         return go;
     }
