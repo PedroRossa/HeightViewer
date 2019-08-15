@@ -125,7 +125,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100000, guid: e36c43c78477c564f8b018ded57e4932, type: 3}
       propertyPath: m_Name
-      value: SandBox_Object
+      value: Box
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: e36c43c78477c564f8b018ded57e4932, type: 3}
       propertyPath: m_LocalRotation.y
@@ -589,7 +589,7 @@ GameObject:
   - component: {fileID: 591598760}
   - component: {fileID: 591598759}
   m_Layer: 8
-  m_Name: SandBoxData
+  m_Name: SandBoxMap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
