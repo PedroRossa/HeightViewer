@@ -256,6 +256,22 @@ public class ProceduralSandBox : MonoBehaviour
     {
         Init();
     }
+
+    public void LoadPackage()
+    {
+        SandBoxData.Init();
+
+        string packagePath = SandBoxData.SelectPackage();
+
+        //Load heightmap texture by package
+        heightMap = SandBoxData.LoadImageAsTexture(packagePath + SandBoxData.instance.heightMapPath);
+        CreateByTexture();
+
+        GameObject[] sampleObjects = SandBoxData.LoadSamples(packagePath);
+        CreateSamplePins(sampleObjects);
+        GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(packagePath);
+        CreatePanoramicPins(panoramicObjects);
+    }
     
     private void Init()
     {
@@ -267,17 +283,74 @@ public class ProceduralSandBox : MonoBehaviour
         
         meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material = new Material(Shader.Find("Custom/VertexColorShader"));
+    }
 
-        SandBoxData.Init();
+    public enum PinType
+    {
+        SAMPLE,
+        PANORAMIC,
+        GENERIC
+    }
 
-        string packagePath = SandBoxData.SelectPackage();
+    private void CreateSamplePins(GameObject[] objs)
+    {
+        for (int i = 0; i < objs.Length; i++)
+        {
+            GameObject go = CreatePin(PinType.SAMPLE);
 
-        //Load heightmap texture by package
-        heightMap = SandBoxData.LoadImageAsTexture(packagePath + SandBoxData.instance.heightMapPath);
-        CreateByTexture();
+            go.transform.SetParent(transform);
+            float x = SandBoxData.instance.samples[i].latitude;
+            float z = SandBoxData.instance.samples[i].longitude;
 
-        GameObject[] sampleObjects = SandBoxData.LoadSamples(packagePath);
-        GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(packagePath);
+            Color height = heightMap.GetPixel((int)x, (int)z);
+
+            Vector3 pos = Vector3.zero;
+            pos.x = x * cube_size;
+            pos.y = height.r * cube_maxHeight;
+            pos.z = z * cube_size;
+
+            go.transform.localPosition = pos;
+        }
+    }
+
+    private void CreatePanoramicPins(GameObject[] objs)
+    {
+        for (int i = 0; i < objs.Length; i++)
+        {
+            GameObject go = CreatePin(PinType.PANORAMIC);
+
+            float x = SandBoxData.instance.panoramicImages[i].latitude;
+            float z = SandBoxData.instance.panoramicImages[i].longitude;
+
+            Color height = heightMap.GetPixel((int)x, (int)z);
+
+            Vector3 pos = Vector3.zero;
+            pos.x = x * cube_size;
+            pos.y = height.r * cube_maxHeight;
+            pos.z = z * cube_size;
+
+            go.transform.localPosition = pos;
+        }
+    }
+
+    private GameObject CreatePin(PinType pinType)
+    {
+        GameObject pin = Instantiate(Resources.Load("Pin", typeof(GameObject)) as GameObject, transform);
+
+        switch (pinType)
+        {
+            case PinType.SAMPLE:
+                pin.GetComponentInChildren<PinManager>().color = Color.red;
+                break;
+            case PinType.PANORAMIC:
+                pin.GetComponentInChildren<PinManager>().color = Color.blue;
+                break;
+            case PinType.GENERIC:
+                pin.GetComponentInChildren<PinManager>().color = Color.green;
+                break;
+        }
+
+        return pin;
     }
     
     void Update()
