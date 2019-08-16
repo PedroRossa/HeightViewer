@@ -26,7 +26,7 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _Size: 83.1
-    - _Softening: 0.39502943
+    - _Softening: 0.09132435
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0

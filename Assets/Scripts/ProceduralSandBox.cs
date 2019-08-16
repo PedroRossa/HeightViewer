@@ -184,6 +184,7 @@ public class ProceduralSandBox : MonoBehaviour
         mesh.uv = uvs;
         mesh.colors = colors;
         mesh.triangles = triangles;
+        //mesh.SetIndices(mesh.triangles, MeshTopology.Points, 0);
     }
 
     IEnumerator AnimateMeshCoroutine(float duration)
