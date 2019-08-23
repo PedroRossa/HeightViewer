@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.heightviewer.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "C:\\Users\\prossa\\Documents\\_Projects\\_Prototypes\\HeightViewer\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "HeightViewer [Testing]"
+        }
+      }
+    }
+  ]
+}
