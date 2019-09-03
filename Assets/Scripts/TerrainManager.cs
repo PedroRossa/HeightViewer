@@ -83,13 +83,18 @@ public class TerrainManager : MonoBehaviour
 
     void Start()
     {
-        string uri = "http://opentopo.sdsc.edu";
-        string paramss = "/otr/getdem?demtype=SRTMGL1&west=-120.168457&south=36.738884&east=-118.465576&north=38.091337&outputFormat=GTiff";
+         string uri = "https://test-proxy-31415.appspot.com";
+        string parameters = "/?url=http://opentopo.sdsc.edu/otr/" +
+            "getdem?demtype=SRTMGL1&" +
+            "west=-119.65227127075197&" +
+            "south=37.69903420794415&" +
+            "east=-119.52283859252931&" +
+            "north=37.77804178967591&" +
+            "outputFormat=GTiff";
 
-        //StartCoroutine(Upload(uri, paramss));
-
-        LoadGeoTiffOnHeightTexture("C:/yosemite.tif");
-        ReadKMLFile();
+        //StartCoroutine(DownloadGeoTiff(uri, parameters, "C:/", "MyFile"));
+        
+        //ReadKMLFile();
 
         meshRenderer = GetComponent<MeshRenderer>();
         meshFilter = GetComponent<MeshFilter>();
@@ -101,17 +106,9 @@ public class TerrainManager : MonoBehaviour
         CreateMesh();
     }
 
-    IEnumerator Upload(string uri, string paramss)
+    IEnumerator DownloadGeoTiff(string uri, string parameters, string filePath, string fileName)
     {
-        string value = "http://opentopo.sdsc.edu/otr/getdem?" +
-            "demtype=SRTMGL1&" +
-            "west=-119.65227127075197&" +
-            "south=37.69903420794415&" +
-            "east=-119.52283859252931&" +
-            "north=37.77804178967591&" +
-            "outputFormat=GTiff";
-
-        using (UnityWebRequest www = UnityWebRequest.Post(uri, paramss))
+        using (UnityWebRequest www = UnityWebRequest.Get(uri + parameters))
         {
             www.chunkedTransfer = true;
             www.timeout = 25;
@@ -124,10 +121,11 @@ public class TerrainManager : MonoBehaviour
             else
             {
                 DownloadHandler dh = www.downloadHandler;
-                Gdal.FileFromMemBuffer("C:/testzin.tif", dh.data);
+                
+                //save file on system
+                System.IO.File.WriteAllBytes(filePath + fileName + ".tif", dh.data);
 
-                // LoadGeoTiffOnHeightTexture("C:/testzin.tif");
-                Debug.Log(dh.text);
+                LoadGeoTiffOnHeightTexture(filePath + fileName + ".tif");
             }
 
         }
