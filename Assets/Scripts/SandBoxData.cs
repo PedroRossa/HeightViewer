@@ -23,6 +23,8 @@ public class SandBoxData : ScriptableObject
     public float longitude;
     public Sample[] samples;
     public PanoramicImage[] panoramicImages;
+    public string kmlPath;
+    public string geoTiffPath;
 
     [Serializable]
     public struct Sample
@@ -33,7 +35,6 @@ public class SandBoxData : ScriptableObject
         public string texturePath;
         public float latitude;
         public float longitude;
-
     }
 
     [Serializable]
