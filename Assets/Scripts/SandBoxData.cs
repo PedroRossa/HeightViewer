@@ -85,9 +85,19 @@ public class SandBoxData : ScriptableObject
         instance.Load();
     }
 
-    public static string SelectPackage()
+    public static string SelectPackageFromFileBrowser()
     {
         string path = StandaloneFileBrowser.OpenFilePanel("Select a JSON", "", "json", false)[0];
+        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(path));
+
+        string fileName = Path.GetFileName(path);
+        string initialPath = path.Replace(fileName, "");
+
+        return initialPath;
+    }
+
+    public static string SelectPackage(string path)
+    {
         PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(path));
 
         string fileName = Path.GetFileName(path);

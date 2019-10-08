@@ -1,8 +1,5 @@
 ﻿using NaughtyAttributes;
-using System.Collections;
 using UnityEngine;
-using OSGeo.GDAL;
-using UnityEngine.Networking;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -12,15 +9,16 @@ public class TerrainManager : MonoBehaviour
     private MeshFilter meshFilter;
     private Mesh mesh;
 
-    [Header("Terrain properties")]
+    [Header("Terrain Properties")]
     public int width = 512;
     public int height = 256;
     public int maxHeight = 20;
 
     private int diffWidth;
     private int diffHeight;
+    private Texture2D texHeight;
 
-    public Texture2D texHeight;
+    [Header("Visual Properties")]
     public Gradient gradient;
     public AnimationCurve animCurve;
     public float animationSpeed;
@@ -28,7 +26,12 @@ public class TerrainManager : MonoBehaviour
     public bool loadingFromOpenTopography;
     public bool loadingFinished;
 
-    private List<Placemark> placemarks = new List<Placemark>();
+    public Texture2D textWorldMap;
+
+    //SCENE DATA
+    private List<GameObject> loadedPins = new List<GameObject>();
+    private LineRenderer loadedRoute = new LineRenderer();
+    private List<Placemark> loadedPlacemarks = new List<Placemark>();
 
     void Start()
     {
@@ -61,7 +64,7 @@ public class TerrainManager : MonoBehaviour
 
             //Read Geotiff image downloaded, set the coordinates and the heightTexture
             Helper.LoadGeotiffData(path, out coordinates, out texHeight);
-            
+
             //Get texture returned and set on map
             SetHeight();
             ColorizeWithGradient();
@@ -74,7 +77,7 @@ public class TerrainManager : MonoBehaviour
         loadingFromOpenTopography = false;
         loadingFinished = true;
     }
-    
+
 
     private void CreateVertices(ref Vector3[] vertices, ref Color[] colors)
     {
@@ -218,6 +221,55 @@ public class TerrainManager : MonoBehaviour
         StartCoroutine(Helper.AnimateMeshCoroutine(meshRenderer, animCurve, initScale, finalScale, animationSpeed));
     }
 
+    private void ResetTerrain()
+    {
+        Vector3[] vertices = new Vector3[width * height];
+        Color[] colors = new Color[width * height];
+
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                int currIndex = j + i * width;
+                vertices[currIndex] = new Vector3(j, 0, i);
+                colors[currIndex] = new Color(0, 0, 0);
+            }
+        }
+        mesh.vertices = vertices;
+        mesh.colors = colors;
+        mesh.RecalculateNormals();
+        mesh.UploadMeshData(false);
+    }
+
+    public void LoadWorldMapTerrain()
+    {
+        //Load world heightmap texture 
+        texHeight = textWorldMap;
+        SetHeight();
+        ColorizeWithGradient();
+    }
+
+    public void ClearScene()
+    {
+        ResetTerrain();
+
+        //Clear lists
+        loadedPins = new List<GameObject>();
+        loadedPlacemarks = new List<Placemark>();
+
+        //Delete Pins
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Destroy(transform.GetChild(i).gameObject);
+        }
+
+        //Delete LineRenderer Route
+        if (gameObject.GetComponent<LineRenderer>() != null)
+        {
+            Destroy(gameObject.GetComponent<LineRenderer>());
+        }
+    }
+
     [Button]
     public void SetHeight()
     {
@@ -232,49 +284,74 @@ public class TerrainManager : MonoBehaviour
         mesh.UploadMeshData(false);
     }
 
-    [Button]
-    public void LoadPackage()
+    public void LoadPackage(string path)
     {
+        string minPath = SandBoxData.SelectPackage(path);
         SandBoxData.Init();
 
-        string packagePath = SandBoxData.SelectPackage();
-
         //Load heightmap texture by package
-        texHeight = SandBoxData.LoadImageAsTexture(packagePath + SandBoxData.instance.heightMapPath);
+        texHeight = SandBoxData.LoadImageAsTexture(minPath + SandBoxData.instance.heightMapPath);
         SetHeight();
         ColorizeWithGradient();
 
         //Load kml from googleEarth, with all the informations
-        placemarks = Helper.ReadKMLFile(packagePath + SandBoxData.instance.kmlPath);
+        loadedPlacemarks = Helper.ReadKMLFile(minPath + SandBoxData.instance.kmlPath);
 
-        //GameObject[] sampleObjects = SandBoxData.LoadSamples(packagePath);
+        //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
+        Helper.WGS84 coordinates = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
+        loadedPins = CreatePins(coordinates);
+        loadedRoute = CreateRoute(coordinates);
+
+        //GameObject[] sampleObjects = SandBoxData.LoadSamples(minPath);
         //CreateSamplePins(sampleObjects);
-        //GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(packagePath);
+        //GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(minPath);
         //CreatePanoramicPins(panoramicObjects);
+    }
+
+    [Button]
+    public void LoadPackage()
+    {
+        string path = SandBoxData.SelectPackageFromFileBrowser();
+        SandBoxData.Init();
+
+        //Load heightmap texture by package
+        texHeight = SandBoxData.LoadImageAsTexture(path + SandBoxData.instance.heightMapPath);
+        SetHeight();
+        ColorizeWithGradient();
+
+        //Load kml from googleEarth, with all the informations
+        loadedPlacemarks = Helper.ReadKMLFile(path + SandBoxData.instance.kmlPath);
+
+        //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
+        Helper.WGS84 coordinates = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
+        loadedPins = CreatePins(coordinates);
+        loadedRoute = CreateRoute(coordinates);
     }
 
     [Button]
     public void LoadMapFromOpenTopography()
     {
         SandBoxData.Init();
-        
+
         //TODO: AQUI EH A CHAMADA PRA QUANDO QUISER FAZER LOAD DE NOVA AREA A PARTIR DA INTERACAO COM O MAPA
         Helper.WGS84 coordinates = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
         LoadFromOpenTopography(coordinates);
     }
 
-    //REVISAR
-    private void CreatePins(Helper.WGS84 coordinates)
-    {
-        double horizontalSize = coordinates.east - coordinates.west;
-        double verticalSize = coordinates.north - coordinates.south;
 
-        foreach (Placemark item in placemarks)
+    //REVISAR
+    private List<GameObject> CreatePins(Helper.WGS84 limits)
+    {
+        List<GameObject> pinsList = new List<GameObject>();
+        double horizontalSize = limits.east - limits.west;
+        double verticalSize = limits.north - limits.south;
+
+        foreach (Placemark item in loadedPlacemarks)
         {
             if (item.Type == Placemark.PlacemarkType.SAMPLE || item.Type == Placemark.PlacemarkType.PANORAMIC)
             {
-                double auxLong = item.Longitude - coordinates.west;
-                double auxLat = item.Latitude - coordinates.south;
+                double auxLong = item.Longitude - limits.west;
+                double auxLat = item.Latitude - limits.south;
 
                 double calculatedX = width * auxLong / horizontalSize;
                 double calculatedY = height * auxLat / verticalSize;
@@ -283,8 +360,21 @@ public class TerrainManager : MonoBehaviour
                 GameObject go = CreateInteractiveObject();
                 float auxHeight = texHeight.GetPixel((int)calculatedX, (int)calculatedY).r;
                 go.transform.localPosition = new Vector3((float)calculatedX, auxHeight * maxHeight, (float)calculatedY);
+                pinsList.Add(go);
             }
-            else if (item.Type == Placemark.PlacemarkType.ROUTE)
+        }
+        return pinsList;
+    }
+
+    //REVISAR
+    private LineRenderer CreateRoute(Helper.WGS84 limits)
+    {
+        double horizontalSize = limits.east - limits.west;
+        double verticalSize = limits.north - limits.south;
+
+        foreach (Placemark item in loadedPlacemarks)
+        {
+            if (item.Type == Placemark.PlacemarkType.ROUTE)
             {
                 LineRenderer lr = gameObject.AddComponent<LineRenderer>();
                 lr.material = new Material(Shader.Find("Sprites/Default"));
@@ -298,8 +388,8 @@ public class TerrainManager : MonoBehaviour
                 int count = 0;
                 foreach (Vector2 value in item.RouteValues)
                 {
-                    double auxLong = value.x - coordinates.west;
-                    double auxLat = value.y - coordinates.south;
+                    double auxLong = value.x - limits.west;
+                    double auxLat = value.y - limits.south;
 
                     double calculatedX = width * auxLong / horizontalSize;
                     double calculatedY = height * auxLat / verticalSize;
@@ -312,12 +402,12 @@ public class TerrainManager : MonoBehaviour
 
                     count++;
                 }
-
                 lr.Simplify(5);
+                return lr;
             }
         }
+        return null;
     }
-
 
     //AQUI PRECISO FAZER CERTINHO OS LOADS
 

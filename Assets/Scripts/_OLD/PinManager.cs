@@ -26,7 +26,7 @@ public class PinManager : MonoBehaviour
 
     private void OnMouseDown()
     {
-        canvas.SetActive(!canvas.active);
+        canvas.SetActive(!canvas.activeSelf);
         Debug.Log("Mouse is down GameObject.");
     }
 
