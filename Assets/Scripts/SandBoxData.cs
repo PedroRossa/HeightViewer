@@ -29,6 +29,7 @@ public class SandBoxData : ScriptableObject
     [Serializable]
     public struct Sample
     {
+        public int id;
         public string name;
         public string description;
         public string modelPath;
@@ -40,6 +41,7 @@ public class SandBoxData : ScriptableObject
     [Serializable]
     public struct PanoramicImage
     {
+        public int id;
         public string name;
         public string description;
         public string path;

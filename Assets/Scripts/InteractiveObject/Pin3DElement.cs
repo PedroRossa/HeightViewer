@@ -6,6 +6,7 @@ public class Pin3DElement : MonoBehaviour
 {
     public InteractionBehaviour interactionBehaviour;
     public Color color = Color.white;
+    public Transform anchorPosition;
     
     public void Initialize()
     {

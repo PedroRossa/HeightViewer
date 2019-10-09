@@ -241,13 +241,6 @@ public class TerrainManager : MonoBehaviour
         mesh.UploadMeshData(false);
     }
 
-    public void LoadWorldMapTerrain()
-    {
-        //Load world heightmap texture 
-        texHeight = textWorldMap;
-        SetHeight();
-        ColorizeWithGradient();
-    }
 
     public void ClearScene()
     {
@@ -268,6 +261,15 @@ public class TerrainManager : MonoBehaviour
         {
             Destroy(gameObject.GetComponent<LineRenderer>());
         }
+    }
+
+    [Button]
+    public void LoadWorldMapTerrain()
+    {
+        //Load world heightmap texture 
+        texHeight = textWorldMap;
+        SetHeight();
+        ColorizeWithGradient();
     }
 
     [Button]
@@ -302,7 +304,7 @@ public class TerrainManager : MonoBehaviour
         loadedPins = CreatePins(coordinates);
         loadedRoute = CreateRoute(coordinates);
 
-        //GameObject[] sampleObjects = SandBoxData.LoadSamples(minPath);
+        GameObject[] sampleObjects = SandBoxData.LoadSamples(minPath);
         //CreateSamplePins(sampleObjects);
         //GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(minPath);
         //CreatePanoramicPins(panoramicObjects);
@@ -453,6 +455,8 @@ public class TerrainManager : MonoBehaviour
         }
     }
 
+    //PAREI AQUI -> PRECISO CARREGAR AS AMOSTRAS E 360 DO PACKAGE, ADICIONAR O SCRIPT DE INTERACTIVEOBJECT E POSICIONAR NO MAPA!
+
     private GameObject CreateInteractiveObject()
     {
         GameObject pin = Instantiate(Resources.Load("InteractiveObject", typeof(GameObject)) as GameObject, transform);
@@ -461,5 +465,31 @@ public class TerrainManager : MonoBehaviour
         pin.GetComponent<InteractiveObjectManager>().Initialize();
 
         return pin;
+    }
+
+    private void CreateInteractiveObjects(string minPath)
+    {
+        GameObject[] sampleObjects = SandBoxData.LoadSamples(minPath);
+        InteractiveObject aux;
+        for (int i = 0; i < sampleObjects.Length; i++)
+        {
+            aux = sampleObjects[i].AddComponent<InteractiveObject>();
+            aux.Initialize();
+            aux.SetPosition(new Vector3());
+
+            sampleObjects[i].transform.SetParent(this.transform);
+
+            float x = SandBoxData.instance.samples[i].latitude;
+            float z = SandBoxData.instance.samples[i].longitude;
+
+            Color heightColor = texHeight.GetPixel((int)x, (int)z);
+
+            Vector3 pos = Vector3.zero;
+            pos.x = x + diffWidth;
+            pos.y = heightColor.r * maxHeight;
+            pos.z = z + diffHeight;
+
+            go.transform.localPosition = pos;
+        }
     }
 }

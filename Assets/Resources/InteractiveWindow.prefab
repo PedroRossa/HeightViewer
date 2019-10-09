@@ -198,7 +198,7 @@ GameObject:
   - component: {fileID: 8331638893074617182}
   - component: {fileID: 2075496568}
   m_Layer: 0
-  m_Name: InteractiveObject
+  m_Name: InteractiveWindow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
