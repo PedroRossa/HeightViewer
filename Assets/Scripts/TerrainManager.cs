@@ -9,6 +9,8 @@ public class TerrainManager : MonoBehaviour
     private MeshFilter meshFilter;
     private Mesh mesh;
 
+    public Transform loadedElementsTransform;
+
     [Header("Terrain Properties")]
     public int width = 512;
     public int height = 256;
@@ -29,7 +31,8 @@ public class TerrainManager : MonoBehaviour
     public Texture2D textWorldMap;
 
     //SCENE DATA
-    private List<GameObject> loadedPins = new List<GameObject>();
+    private List<GameObject> loadedSamples = new List<GameObject>();
+    private List<GameObject> loadedPanoramics = new List<GameObject>();
     private LineRenderer loadedRoute = new LineRenderer();
     private List<Placemark> loadedPlacemarks = new List<Placemark>();
 
@@ -247,7 +250,8 @@ public class TerrainManager : MonoBehaviour
         ResetTerrain();
 
         //Clear lists
-        loadedPins = new List<GameObject>();
+        loadedSamples = new List<GameObject>();
+        loadedPanoramics = new List<GameObject>();
         loadedPlacemarks = new List<Placemark>();
 
         //Delete Pins
@@ -301,10 +305,11 @@ public class TerrainManager : MonoBehaviour
 
         //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
         Helper.WGS84 coordinates = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
-        loadedPins = CreatePins(coordinates);
+       
+        loadedSamples = CreateSampleObjects(coordinates);
+        loadedPanoramics = CreatePanoramicObjects(coordinates);
         loadedRoute = CreateRoute(coordinates);
 
-        GameObject[] sampleObjects = SandBoxData.LoadSamples(minPath);
         //CreateSamplePins(sampleObjects);
         //GameObject[] panoramicObjects = SandBoxData.LoadPanoramicImages(minPath);
         //CreatePanoramicPins(panoramicObjects);
@@ -326,7 +331,9 @@ public class TerrainManager : MonoBehaviour
 
         //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
         Helper.WGS84 coordinates = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
-        loadedPins = CreatePins(coordinates);
+
+        loadedSamples = CreateSampleObjects(coordinates);
+        loadedPanoramics = CreatePanoramicObjects(coordinates);
         loadedRoute = CreateRoute(coordinates);
     }
 
@@ -339,35 +346,7 @@ public class TerrainManager : MonoBehaviour
         Helper.WGS84 coordinates = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
         LoadFromOpenTopography(coordinates);
     }
-
-
-    //REVISAR
-    private List<GameObject> CreatePins(Helper.WGS84 limits)
-    {
-        List<GameObject> pinsList = new List<GameObject>();
-        double horizontalSize = limits.east - limits.west;
-        double verticalSize = limits.north - limits.south;
-
-        foreach (Placemark item in loadedPlacemarks)
-        {
-            if (item.Type == Placemark.PlacemarkType.SAMPLE || item.Type == Placemark.PlacemarkType.PANORAMIC)
-            {
-                double auxLong = item.Longitude - limits.west;
-                double auxLat = item.Latitude - limits.south;
-
-                double calculatedX = width * auxLong / horizontalSize;
-                double calculatedY = height * auxLat / verticalSize;
-
-                //GameObject go = CreatePin(PinType.SAMPLE);
-                GameObject go = CreateInteractiveObject();
-                float auxHeight = texHeight.GetPixel((int)calculatedX, (int)calculatedY).r;
-                go.transform.localPosition = new Vector3((float)calculatedX, auxHeight * maxHeight, (float)calculatedY);
-                pinsList.Add(go);
-            }
-        }
-        return pinsList;
-    }
-
+    
     //REVISAR
     private LineRenderer CreateRoute(Helper.WGS84 limits)
     {
@@ -413,83 +392,70 @@ public class TerrainManager : MonoBehaviour
 
     //AQUI PRECISO FAZER CERTINHO OS LOADS
 
-    private void CreateSamplePins(GameObject[] objs)
+    private List<GameObject> CreateSampleObjects(Helper.WGS84 limits)
     {
-        for (int i = 0; i < objs.Length; i++)
+        List<GameObject> sampleObjects = new List<GameObject>();
+
+        double horizontalSize = limits.east - limits.west;
+        double verticalSize = limits.north - limits.south;
+
+        foreach (SandBoxData.Sample item in SandBoxData.instance.samples)
         {
-            //GameObject go = CreatePin();
+            GameObject go = SandBoxData.LoadSampleModel(item);
+            InteractiveObject io = go.AddComponent<InteractiveObject>();
 
-            //go.transform.SetParent(transform);
-            //float x = SandBoxData.instance.samples[i].latitude;
-            //float z = SandBoxData.instance.samples[i].longitude;
+            double auxLong = item.longitude - limits.west;
+            double auxLat = item.latitude - limits.south;
 
-            //Color heightColor = texHeight.GetPixel((int)x, (int)z);
+            double calculatedX = width * auxLong / horizontalSize;
+            double calculatedY = height * auxLat / verticalSize;
+            float auxHeight = texHeight.GetPixel((int)calculatedX, (int)calculatedY).r;
 
-            //Vector3 pos = Vector3.zero;
-            //pos.x = x + diffWidth;
-            //pos.y = heightColor.r * maxHeight;
-            //pos.z = z + diffHeight;
+            Vector3 pos = new Vector3((float)calculatedX, auxHeight * maxHeight, (float)calculatedY);
 
-            //go.transform.localPosition = pos;
+            //Put element inside of map to positionate correctly
+            io.SetParent(this.transform);
+            io.SetPosition(pos, false);
+
+            //then put element out to correct scale
+            io.SetParent(loadedElementsTransform);
+            io.SetModelScale(0.035f);
+
+            sampleObjects.Add(go);
         }
+        return sampleObjects;
     }
 
-    private void CreatePanoramicPins(GameObject[] objs)
+    private List<GameObject> CreatePanoramicObjects(Helper.WGS84 limits)
     {
-        for (int i = 0; i < objs.Length; i++)
+        List<GameObject> panoramicObjects = new List<GameObject>();
+
+        double horizontalSize = limits.east - limits.west;
+        double verticalSize = limits.north - limits.south;
+
+        foreach (SandBoxData.PanoramicImage item in SandBoxData.instance.panoramicImages)
         {
-            //GameObject go = CreatePin(PinType.PANORAMIC);
+            GameObject go = SandBoxData.LoadPanoramicImage(item);
+            InteractiveObject io = go.AddComponent<InteractiveObject>();
+            
+            double auxLong = item.longitude - limits.west;
+            double auxLat = item.latitude - limits.south;
 
-            //go.transform.SetParent(transform);
-            //float x = SandBoxData.instance.panoramicImages[i].latitude;
-            //float z = SandBoxData.instance.panoramicImages[i].longitude;
+            double calculatedX = width * auxLong / horizontalSize;
+            double calculatedY = height * auxLat / verticalSize;
+            float auxHeight = texHeight.GetPixel((int)calculatedX, (int)calculatedY).r;
 
-            //Color heightColor = texHeight.GetPixel((int)x, (int)z);
+            Vector3 pos = new Vector3((float)calculatedX, auxHeight * maxHeight, (float)calculatedY);
 
-            //Vector3 pos = Vector3.zero;
-            //pos.x = x + diffWidth;
-            //pos.y = heightColor.r * maxHeight;
-            //pos.z = z + diffHeight;
+            //Put element inside of map to positionate correctly
+            io.SetParent(this.transform);
+            io.SetPosition(pos, false);
+            //then put element out to correct scale
+            io.SetParent(loadedElementsTransform);
+            io.SetModelScale(0.035f);
 
-            //go.transform.localPosition = pos;
+            panoramicObjects.Add(go);
         }
-    }
-
-    //PAREI AQUI -> PRECISO CARREGAR AS AMOSTRAS E 360 DO PACKAGE, ADICIONAR O SCRIPT DE INTERACTIVEOBJECT E POSICIONAR NO MAPA!
-
-    private GameObject CreateInteractiveObject()
-    {
-        GameObject pin = Instantiate(Resources.Load("InteractiveObject", typeof(GameObject)) as GameObject, transform);
-        pin.transform.localScale = Vector3.one * 100;
-
-        pin.GetComponent<InteractiveObjectManager>().Initialize();
-
-        return pin;
-    }
-
-    private void CreateInteractiveObjects(string minPath)
-    {
-        GameObject[] sampleObjects = SandBoxData.LoadSamples(minPath);
-        InteractiveObject aux;
-        for (int i = 0; i < sampleObjects.Length; i++)
-        {
-            aux = sampleObjects[i].AddComponent<InteractiveObject>();
-            aux.Initialize();
-            aux.SetPosition(new Vector3());
-
-            sampleObjects[i].transform.SetParent(this.transform);
-
-            float x = SandBoxData.instance.samples[i].latitude;
-            float z = SandBoxData.instance.samples[i].longitude;
-
-            Color heightColor = texHeight.GetPixel((int)x, (int)z);
-
-            Vector3 pos = Vector3.zero;
-            pos.x = x + diffWidth;
-            pos.y = heightColor.r * maxHeight;
-            pos.z = z + diffHeight;
-
-            go.transform.localPosition = pos;
-        }
+        return panoramicObjects;
     }
 }

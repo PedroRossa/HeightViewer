@@ -50,7 +50,10 @@ public class SandBoxData : ScriptableObject
     }
 
     #endregion
-    
+
+    private static string fullPackagePath;
+    private static string rootPath;
+
     #region Save and Load by Json
 
     public void Save()
@@ -89,23 +92,24 @@ public class SandBoxData : ScriptableObject
 
     public static string SelectPackageFromFileBrowser()
     {
-        string path = StandaloneFileBrowser.OpenFilePanel("Select a JSON", "", "json", false)[0];
-        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(path));
+        fullPackagePath = StandaloneFileBrowser.OpenFilePanel("Select a JSON", "", "json", false)[0];
+        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(fullPackagePath));
 
-        string fileName = Path.GetFileName(path);
-        string initialPath = path.Replace(fileName, "");
+        string fileName = Path.GetFileName(fullPackagePath);
+        rootPath = fullPackagePath.Replace(fileName, "");
 
-        return initialPath;
+        return rootPath;
     }
 
     public static string SelectPackage(string path)
     {
-        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(path));
+        fullPackagePath = path;
+        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(fullPackagePath));
 
-        string fileName = Path.GetFileName(path);
-        string initialPath = path.Replace(fileName, "");
+        string fileName = Path.GetFileName(fullPackagePath);
+        rootPath = fullPackagePath.Replace(fileName, "");
 
-        return initialPath;
+        return rootPath;
     }
 
     public static Texture2D LoadImageAsTexture(string path)
@@ -148,9 +152,24 @@ public class SandBoxData : ScriptableObject
         return texture;
     }
 
+
+    public static GameObject LoadSampleModel(Sample sample)
+    {
+        string modelPath = rootPath + sample.modelPath;
+        string texturePath = rootPath + sample.texturePath;
+
+        return Load3DModel(sample.name, modelPath, texturePath);
+    }
+
+    public static GameObject LoadPanoramicImage(PanoramicImage panoramic)
+    {
+        string fullPath = rootPath + panoramic.path;
+        return LoadPanormicImage(panoramic.name, fullPath);
+    }
+
     public static GameObject[] LoadSamples(string packagePath)
     {
-        if(instance == null)
+        if (instance == null)
         {
             Debug.Log("Error on Load Package' Samples, instance is null");
             return null;
@@ -186,6 +205,7 @@ public class SandBoxData : ScriptableObject
         return panorimicObjects;
     }
 
+
     #region Load models and images
 
     //TODO: Threat when have a .mtl to get the textures automatically
@@ -198,7 +218,7 @@ public class SandBoxData : ScriptableObject
 
         DXMImporter.Load(path, ref model, ref error, ref progress, out textPaths);
     }
-    
+
     private static void ConvertSKBitmapToTexture2D(SKBitmap bitmap, out Texture2D texture)
     {
         texture = new Texture2D(bitmap.Width, bitmap.Height);
@@ -213,7 +233,7 @@ public class SandBoxData : ScriptableObject
             pixels[count] = new Color32(bytes[i + 2], bytes[i + 1], bytes[i], bytes[i + 3]);
             count++;
         }
-        
+
         texture.SetPixels32(pixels);
         texture.Apply();
     }

@@ -59,6 +59,5 @@ public class Placemark
             default:
                 return PlacemarkType.OTHER;
         }
-
     }
 }

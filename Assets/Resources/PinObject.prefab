@@ -161,10 +161,10 @@ MonoBehaviour:
   _isIgnoringAllHoverState: 0
   _ignorePrimaryHover: 0
   _ignoreContact: 0
-  _ignoreGrasping: 0
+  _ignoreGrasping: 1
   _contactForceMode: 1
   _allowMultiGrasp: 0
-  _moveObjectWhenGrasped: 1
+  _moveObjectWhenGrasped: 0
   graspedMovementType: 0
   _overrideInteractionLayer: 0
   _interactionLayer:

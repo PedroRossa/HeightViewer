@@ -52,7 +52,7 @@ public class InteractiveObject : MonoBehaviour
         element.transform.localScale = Vector3.one;
 
         //Move element to up, the pin is the anchor of the prefab
-        element.transform.localPosition = new Vector3(0, 5, 0);
+        element.transform.localPosition = new Vector3(0, 0.3f, 0);
 
         //put elementContainer inside of the rootObj
         elementContainer.transform.SetParent(rootObj.transform);
@@ -79,16 +79,18 @@ public class InteractiveObject : MonoBehaviour
             rigidbody = element.AddComponent<Rigidbody>();
         }
 
+        element.AddComponent<BoxCollider>();
         element.AddComponent<InteractionOutline>();
-        element.AddComponent<Outline>();
-        
-        interactionBehaviour.contactForceMode = ContactForceMode.UI;
+
+        interactionBehaviour.ignoreGrasping = false;
+        interactionBehaviour.moveObjectWhenGrasped = true;
+        interactionBehaviour.contactForceMode = ContactForceMode.Object;
 
         rigidbody.useGravity = false;
         rigidbody.isKinematic = true;
     }
     
-    private void InitLineRenderer()
+    private void InitializeLineRenderer()
     {
         lineRenderer = gameObject.AddComponent<LineRenderer>();
 
@@ -113,6 +115,7 @@ public class InteractiveObject : MonoBehaviour
         lineRenderer.SetPosition(1, element.transform.position);
     }
 
+
     public void Initialize()
     {
         CreatePrefabStructure();
@@ -120,7 +123,7 @@ public class InteractiveObject : MonoBehaviour
 
         pinElement = pin.GetComponent<Pin3DElement>();
 
-        InitLineRenderer();
+        InitializeLineRenderer();
     }
 
     public void SetPosition(Vector3 position, bool useWorldPosition = true)
@@ -133,5 +136,20 @@ public class InteractiveObject : MonoBehaviour
         {
             rootObj.transform.localPosition = position;
         }
+    }
+
+    public void SetModelScale(float scale)
+    {
+        element.transform.localScale = new Vector3(scale, scale, scale);
+    }
+
+    public void SetModelScale(Vector3 scale)
+    {
+        element.transform.localScale = scale;
+    }
+    
+    public void SetParent(Transform parent)
+    {
+        rootObj.transform.SetParent(parent);
     }
 }
