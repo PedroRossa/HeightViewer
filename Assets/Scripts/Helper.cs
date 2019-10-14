@@ -49,7 +49,7 @@ public class Helper : MonoBehaviour
     }
 
     #region Coroutines
-    
+
     public static IEnumerator AnimateMeshCoroutine(MeshRenderer meshRenderer, AnimationCurve animationCurve = null, float initScale = 0.001f, float finalScale = 1, float duration = 1)
     {
         if (meshRenderer == null)
@@ -132,7 +132,7 @@ public class Helper : MonoBehaviour
         tex.Apply();
         return tex;
     }
-    
+
     private static void LoadGeotiffImage(string path, out Band band, out WGS84 coordinates)
     {
         Gdal.AllRegister();
@@ -189,34 +189,16 @@ public class Helper : MonoBehaviour
 
     #region KML_Helper
 
-    public static List<Placemark> ReadKMLFile(string kmlPath)
+    private static void SetPlacemarkData(XmlNode xmlElement, out KMLPlacemark placemark)
     {
-        List<Placemark> placemarks = new List<Placemark>();
-        XmlDocument xmlDoc = new XmlDocument();
-        xmlDoc.Load(kmlPath);
-        XmlNodeList placesmarks = xmlDoc.GetElementsByTagName("Placemark");
-
-        foreach (XmlNode item in placesmarks)
-        {
-            Placemark pl = new Placemark();
-            SetPlacemarkData(item, out pl);
-
-            placemarks.Add(pl);
-            //Debug.Log(pl.type + " | " + pl.name + " lat:" + pl.latitude + " long:" + pl.longitude);
-        }
-        return placemarks;
-    }
-
-    private static void SetPlacemarkData(XmlNode xmlElement, out Placemark placemark)
-    {
-        placemark = new Placemark();
+        placemark = new KMLPlacemark();
 
         foreach (XmlNode item in xmlElement.ChildNodes)
         {
             if (item.Name.Equals("name"))
             {
                 placemark.Name = item.InnerText;
-                placemark.Type = Placemark.TypeByName(placemark.Name);
+                placemark.Type = KMLPlacemark.TypeByName(placemark.Name);
             }
             //pins
             if (item.Name.Equals("Point"))
@@ -253,6 +235,58 @@ public class Helper : MonoBehaviour
                 }
             }
         }
+    }
+
+    public static List<KMLPlacemark> ReadKMLFile(string kmlPath)
+    {
+        List<KMLPlacemark> placemarks = new List<KMLPlacemark>();
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.Load(kmlPath);
+        XmlNodeList placesmarks = xmlDoc.GetElementsByTagName("Placemark");
+
+        foreach (XmlNode item in placesmarks)
+        {
+            KMLPlacemark pl = new KMLPlacemark();
+            SetPlacemarkData(item, out pl);
+
+            placemarks.Add(pl);
+            //Debug.Log(pl.type + " | " + pl.name + " lat:" + pl.latitude + " long:" + pl.longitude);
+        }
+        return placemarks;
+    }
+
+    public static List<Vector3> RouteDataFromKML(string kmlPath, TerrainManager terrainManager, WGS84 limits)
+    {
+        double horizontalSize = limits.east - limits.west;
+        double verticalSize = limits.north - limits.south;
+
+        List<Vector3> positions = new List<Vector3>();
+        int count = 0;
+        
+        List<KMLPlacemark> placemarks = ReadKMLFile(kmlPath);
+        foreach (KMLPlacemark item in placemarks)
+        {
+            if (item.Type == KMLPlacemark.PlacemarkType.ROUTE)
+            {
+                foreach (Vector2 value in item.RouteValues)
+                {
+                    double auxLong = value.x - limits.west;
+                    double auxLat = value.y - limits.south;
+
+                    double calculatedX = terrainManager.width * auxLong / horizontalSize;
+                    double calculatedY = terrainManager.height * auxLat / verticalSize;
+
+                    float auxHeight = terrainManager.terrain.GetTexture().GetPixel((int)calculatedX, (int)calculatedY).r;
+                    //Add 10% of maxHeight to unblock from model
+                    float finalHeight = auxHeight * terrainManager.maxHeight * 1.1f;
+
+                    positions.Add(new Vector3((float)calculatedX, finalHeight, (float)calculatedY));
+
+                    count++;
+                }
+            }
+        }
+        return positions;
     }
 
     #endregion
@@ -383,7 +417,7 @@ public class Helper : MonoBehaviour
         }
     }
 
-    public static GameObject LoadPanormicImage(string name, string path)
+    public static GameObject LoadPanoramicImage(string name, string path)
     {
         GameObject go = Instantiate(Resources.Load("InvertedSphere") as GameObject);
         go.name = name;

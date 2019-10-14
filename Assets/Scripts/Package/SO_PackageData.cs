@@ -24,6 +24,13 @@ public class SO_PackageData : ScriptableObject
     }
 
     [Serializable]
+    public struct gdc_file
+    {
+        public string name;
+        public string path;
+    }
+
+    [Serializable]
     public struct gdc_data
     {
         public int id;
@@ -33,6 +40,7 @@ public class SO_PackageData : ScriptableObject
         public float longitude;
         public gdc_model3D model3D;
         public gdc_panoramic panoramic;
+        public gdc_file file;
     }
 
     public static SO_PackageData instance;
@@ -95,7 +103,7 @@ public class SO_PackageData : ScriptableObject
     public static string SelectPackageFromFileBrowser()
     {
         fullPackagePath = StandaloneFileBrowser.OpenFilePanel("Select a JSON", "", "json", false)[0];
-        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(fullPackagePath));
+        PlayerPrefs.SetString("SAVED_DATA", System.IO.File.ReadAllText(fullPackagePath));
 
         string fileName = Path.GetFileName(fullPackagePath);
         rootPath = fullPackagePath.Replace(fileName, "");
@@ -106,7 +114,7 @@ public class SO_PackageData : ScriptableObject
     public static string SelectPackage(string path)
     {
         fullPackagePath = path;
-        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(fullPackagePath));
+        PlayerPrefs.SetString("SAVED_DATA", System.IO.File.ReadAllText(fullPackagePath));
 
         string fileName = Path.GetFileName(fullPackagePath);
         rootPath = fullPackagePath.Replace(fileName, "");

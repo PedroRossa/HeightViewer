@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Placemark
+public class KMLPlacemark
 {
     public enum PlacemarkType
     {
@@ -25,7 +25,7 @@ public class Placemark
     public PlacemarkType Type { get => type; set => type = value; }
     public List<Vector2> RouteValues { get => routeValues; set => routeValues = value; }
 
-    public Placemark()
+    public KMLPlacemark()
     {
         Id = -1;
         Name = "";
@@ -35,7 +35,7 @@ public class Placemark
         RouteValues =  new List<Vector2>();
     }
 
-    public Placemark(int id, string name, double latitude = 0, double longitude = 0, PlacemarkType type = PlacemarkType.OTHER, List<Vector2> routeValues = null)
+    public KMLPlacemark(int id, string name, double latitude = 0, double longitude = 0, PlacemarkType type = PlacemarkType.OTHER, List<Vector2> routeValues = null)
     {
         this.Id = id;
         this.Name = name;

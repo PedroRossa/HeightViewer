@@ -38,10 +38,10 @@ namespace Vizlab
         }
 
         #endregion
-
+        
         public void LoadPanoramic()
         {
-            goPanoramic = Helper.LoadPanormicImage(name, panoramicPath);
+            goPanoramic = Helper.LoadPanoramicImage(name, panoramicPath);
         }
     }
 }

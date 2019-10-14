@@ -39,11 +39,10 @@ namespace Vizlab
             {
                 LoadModel();
             }
-
         }
-
+        
         #endregion
-
+        
         public void LoadModel()
         {
             goModel = Helper.Load3DModel(name, modelPath, texturePath);
