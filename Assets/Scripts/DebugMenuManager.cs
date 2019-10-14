@@ -2,7 +2,7 @@
 
 public class DebugMenuManager : MonoBehaviour
 {
-    public TerrainManager terrainManager;
+    public PackageManager packageManager;
     public GameObject content;
     public GameObject packagesListObject;
     
@@ -13,12 +13,12 @@ public class DebugMenuManager : MonoBehaviour
 
     public void ClearMap()
     {
-        terrainManager.ClearScene();
+        packageManager.ClearScene();
     }
 
     public void LoadWorldMap()
     {
-        terrainManager.LoadWorldMapTerrain();
+        packageManager.LoadWorldMapTerrain();
     }
 
     public void LoadPackage(int id)
@@ -26,7 +26,7 @@ public class DebugMenuManager : MonoBehaviour
         switch (id)
         {
             case 0:
-                terrainManager.LoadPackage("C:\\Users\\prossa\\Desktop\\Arapua\\package.json");
+                packageManager.LoadPackage("C:\\Users\\prossa\\Desktop\\Arapua\\package.json");
                 break;
             case 1:
                 break;

@@ -4,9 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEngine;
-using UnityEngine.Networking;
 
-public class Helper
+using Atlas.IO;
+using SkiaSharp;
+using System.IO;
+
+public class Helper : MonoBehaviour
 {
     public static void Resize(ref Texture2D source, int newWidth, int newHeight, FilterMode filterMode = FilterMode.Point)
     {
@@ -46,7 +49,7 @@ public class Helper
     }
 
     #region Coroutines
-
+    
     public static IEnumerator AnimateMeshCoroutine(MeshRenderer meshRenderer, AnimationCurve animationCurve = null, float initScale = 0.001f, float finalScale = 1, float duration = 1)
     {
         if (meshRenderer == null)
@@ -250,6 +253,149 @@ public class Helper
                 }
             }
         }
+    }
+
+    #endregion
+
+    #region Loaders
+
+    private static void LoadDXM(string path, out string error, out DXMModel model)
+    {
+        error = string.Empty;
+        float progress = 0;
+        string[] textPaths;
+        model = new DXMModel();
+
+        DXMImporter.Load(path, ref model, ref error, ref progress, out textPaths);
+    }
+
+    private static void ConvertSKBitmapToTexture2D(SKBitmap bitmap, out Texture2D texture)
+    {
+        texture = new Texture2D(bitmap.Width, bitmap.Height);
+        byte[] bytes = bitmap.Bytes;
+        int length = bytes.Length;
+        Color32[] pixels = new Color32[length / 4];
+        int count = 0;
+
+        //TODO: See how to save properly the texture, actually the texture it's upside down
+        for (int i = 0; i < length; i += 4)
+        {
+            pixels[count] = new Color32(bytes[i + 2], bytes[i + 1], bytes[i], bytes[i + 3]);
+            count++;
+        }
+
+        texture.SetPixels32(pixels);
+        texture.Apply();
+    }
+
+    private static void PopulateMeshWithDXMModel(DXMModel model, out Mesh mesh)
+    {
+        mesh = new Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        mesh.vertices = model.vertexUnity;
+        mesh.normals = model.normalUnity;
+        mesh.uv = model.uvUnity;
+        mesh.subMeshCount = model.groups.Length;
+
+        for (int i = 0; i < model.groups.Length; i++)
+        {
+            //Flips the indices of the model to account for the flipping of the z axis.
+            for (int j = 0; j < model.groups[i].index32.Length / 3; ++j)
+            {
+                int temp = model.groups[i].index32[j * 3 + 0];
+                model.groups[i].index32[j * 3 + 0] = model.groups[i].index32[j * 3 + 1];
+                model.groups[i].index32[j * 3 + 1] = temp;
+            }
+            mesh.SetIndices(model.groups[i].index32, MeshTopology.Triangles, i);
+        }
+
+        mesh.UploadMeshData(true);
+    }
+
+
+    public static Texture2D LoadImageAsTexture(string path)
+    {
+        SKBitmap bitmap;
+        try
+        {
+            FileStream imgStream = File.OpenRead(path);
+            SKManagedStream skManagedStream = new SKManagedStream(imgStream);
+            bitmap = SKBitmap.Decode(skManagedStream);
+
+            //Guarantee BGRA8888 to the loaded image
+            if (bitmap.ColorType != SKColorType.Bgra8888)
+            {
+                SKBitmap tempBitmap = new SKBitmap(bitmap.Width, bitmap.Height, false);
+                bitmap.CopyTo(tempBitmap, SKColorType.Bgra8888);
+                bitmap.Dispose();
+                bitmap = tempBitmap;
+            }
+            skManagedStream.Dispose();
+            imgStream.Close();
+            imgStream.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogErrorFormat("Could not load file: {0} with error: {1}", Path.GetFileNameWithoutExtension(path), ex.Message);
+            return null;
+        }
+
+        if (bitmap == null) //It appears that Skia lib sometimes don't read the image but don't throw a exception.
+        {
+            Debug.LogErrorFormat("Could not load file: {0} the image cannot be opened.", Path.GetFileNameWithoutExtension(path));
+            return null;
+        }
+
+        Texture2D texture;
+        ConvertSKBitmapToTexture2D(bitmap, out texture);
+        texture.name = Path.GetFileNameWithoutExtension(path);
+
+        return texture;
+    }
+
+    public static GameObject Load3DModel(string name, string modelPath, string texturePath)
+    {
+        GameObject go = new GameObject(name);
+        MeshFilter meshFilter = go.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = go.AddComponent<MeshRenderer>();
+        Mesh mesh = meshFilter.mesh;
+        meshRenderer.material = new Material(Shader.Find("Unlit/Texture"));
+
+        DXMModel model;
+        string error = string.Empty;
+        LoadDXM(modelPath, out error, out model);
+
+        if (string.IsNullOrEmpty(error))
+        {
+            PopulateMeshWithDXMModel(model, out mesh);
+            meshFilter.mesh = mesh;
+
+            //Load and apply texture
+            Texture2D texture = LoadImageAsTexture(texturePath);
+            meshRenderer.material.mainTexture = texture;
+
+            return go;
+        }
+        else
+        {
+            Debug.Log("Error on load the model - Error: " + error);
+            return null;
+        }
+    }
+
+    public static GameObject LoadPanormicImage(string name, string path)
+    {
+        GameObject go = Instantiate(Resources.Load("InvertedSphere") as GameObject);
+        go.name = name;
+
+        Material mat = new Material(Shader.Find("Unlit/Texture"));
+
+        mat.mainTexture = LoadImageAsTexture(path);
+        mat.SetTextureScale("_MainTex", new Vector2(-1, 1));
+
+        go.GetComponent<MeshRenderer>().material = mat;
+
+        return go;
     }
 
     #endregion

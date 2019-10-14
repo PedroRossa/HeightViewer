@@ -265,7 +265,7 @@ public class ProceduralSandBox : MonoBehaviour
         string packagePath = SandBoxData.SelectPackageFromFileBrowser();
 
         //Load heightmap texture by package
-        heightMap = SandBoxData.LoadImageAsTexture(packagePath + SandBoxData.instance.heightMapPath);
+        heightMap = Helper.LoadImageAsTexture(packagePath + SandBoxData.instance.heightMapPath);
         CreateByTexture();
 
         GameObject[] sampleObjects = SandBoxData.LoadSamples(packagePath);
