@@ -44,6 +44,6 @@ namespace Vizlab
 
         #endregion
 
-        public abstract void LoadData();
+        public abstract void LoadData(string rootPath);
     }
 }

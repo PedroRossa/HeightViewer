@@ -60,22 +60,8 @@ public class PackageManager : MonoBehaviour
         double horizontalSize = limits.east - limits.west;
         double verticalSize = limits.north - limits.south;
 
-        InteractiveObject io;
-
-        if (gdc.Model3D != null)
-        {
-            io = gdc.Model3D.GoModel.AddComponent<InteractiveObject>();
-        }
-        else if (gdc.Panoramic != null)
-        {
-            io = gdc.Panoramic.GoPanoramic.AddComponent<InteractiveObject>();
-        }
-        else
-        {
-            //TODO: HERE CREATE GENERIC OBJECT TO MANIPULATE GDC WITHOUT MODEL AND PANORAMIC
-            io = null;
-        }
-
+        InteractiveObject io = gdc.GoModel.AddComponent<InteractiveObject>();
+        
         double auxLong = gdc.Longitude - limits.west;
         double auxLat = gdc.Latitude - limits.south;
 
@@ -100,25 +86,35 @@ public class PackageManager : MonoBehaviour
         {
             GDC gdc = new GDC(item.name, item.description, item.latitude, item.longitude);
 
-            foreach (SO_PackageData.gdc_element element in item.elements)
+            foreach (SO_PackageData.gdc_element currElement in item.elements)
             {
+                GDCElement newElement;
                 //Convert string to enum
-                Enum.TryParse(element.type, out ElementType type);
+                Enum.TryParse(currElement.type, out ElementType type);
 
                 switch (type)
                 {
                     case ElementType.Sample:
-                        //Helper.UnzipFile(rootPath + element.relativePath);
+                        Helper.UnzipFile(rootPath + currElement.relativePath);
+                        newElement = new GDCElementSample(currElement, rootPath);
                         break;
                     case ElementType.Panoramic:
+                        newElement = new GDCElementPanoramic(currElement, rootPath);
                         //gdc.Panoramic = new Panoramic(item.panoramic.name, rootPath + item.panoramic.path);
                         break;
                     case ElementType.File:
+                        newElement = new GDCElementFile(currElement, rootPath);
                         break;
                     default:
-                        break;
+                        Debug.Log("Unknown element type detected.");
+                        continue;
                 }
+                gdc.Elements.Add(newElement);
             }
+
+            gdc.SetInteractiveModel(RepresentativeModel.SAMPLE);
+            AddInteractiveObjectToGDC(ref gdc);
+            loadedGDCs.Add(gdc);
 
             //Check if exists 3d model on gdc item
             //if (!string.IsNullOrEmpty(item.model3D.texturePath) &&
