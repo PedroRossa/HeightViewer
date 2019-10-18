@@ -1,47 +1,33 @@
 ﻿using System;
 using System.IO;
 using SFB;
-using Vizlab;
 
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "SO_PackageData", menuName = "SOs/PackageData/Create")]
 public class SO_PackageData : ScriptableObject
-{
+{    
     [Serializable]
-    public struct gdc_model3D
+    public struct gdc_element
     {
         public string name;
-        public string modelPath;
-        public string texturePath;
-    }
-
-    [Serializable]
-    public struct gdc_panoramic
-    {
-        public string name;
-        public string path;
-    }
-
-    [Serializable]
-    public struct gdc_file
-    {
-        public string name;
-        public string path;
+        public string description;
+        public float latitude;
+        public float longitude;
+        public string type;
+        public string relativePath;
     }
 
     [Serializable]
     public struct gdc_data
     {
-        public int id;
         public string name;
         public string description;
         public float latitude;
         public float longitude;
-        public gdc_model3D model3D;
-        public gdc_panoramic panoramic;
-        public gdc_file file;
+        public gdc_element[] elements;
     }
+
 
     public static SO_PackageData instance;
 
@@ -49,15 +35,12 @@ public class SO_PackageData : ScriptableObject
 
     public string name;
     public string description;
-    public float maxHeight;
-    public float animationSpeed;
-    public string heightMapPath;
-    public string colorMapPath;
     public float latitude;
     public float longitude;
-    public gdc_data[] gdcs;
-    public string kmlPath;
     public string geoTiffPath;
+    public string kmlPath;
+    public string boundries;
+    public gdc_data[] gdcs;
     
     #endregion
 

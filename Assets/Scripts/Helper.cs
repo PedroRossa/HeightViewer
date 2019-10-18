@@ -1,5 +1,6 @@
 ﻿using OSGeo.GDAL;
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
@@ -7,7 +8,8 @@ using UnityEngine;
 
 using Atlas.IO;
 using SkiaSharp;
-using System.IO;
+using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 
 public class Helper : MonoBehaviour
 {
@@ -135,6 +137,8 @@ public class Helper : MonoBehaviour
 
     private static void LoadGeotiffImage(string path, out Band band, out WGS84 coordinates)
     {
+        try
+        {
         Gdal.AllRegister();
 
         Dataset rasterDataset = Gdal.Open(path, Access.GA_ReadOnly);
@@ -176,6 +180,15 @@ public class Helper : MonoBehaviour
         band = rasterDataset.GetRasterBand(1);
         int rastWidth = rasterCols;
         int rastHeight = rasterRows;
+
+        }
+        catch (Exception e)
+        {
+            //TODO: Deal with this errors
+            Debug.Log("error to read geotif. Error: " + e.Message);
+            band = null;
+            coordinates = new WGS84();
+        }
     }
 
     public static void LoadGeotiffData(string path, out WGS84 coordinates, out Texture2D heightTexture)
@@ -430,6 +443,83 @@ public class Helper : MonoBehaviour
         go.GetComponent<MeshRenderer>().material = mat;
 
         return go;
+    }
+
+
+    public static void UnzipFile(string zipPath)
+    {
+        if (!File.Exists(zipPath))
+            return;
+
+        // Read file
+        FileStream fs = null;
+        try
+        {
+            fs = new FileStream(zipPath, FileMode.Open);
+        }
+        catch
+        {
+            Debug.Log("GameData file open exception: " + zipPath);
+        }
+
+        if (fs != null)
+        {
+            try
+            {
+                // Read zip file
+                ZipFile zf = new ZipFile(fs);
+                int numFiles = 0;
+
+                if (!zf.TestArchive(true))
+                {
+                    Debug.Log("Zip file failed integrity check!");
+                    zf.IsStreamOwner = false;
+                    zf.Close();
+                    fs.Close();
+                }
+                else
+                {
+                    foreach (ZipEntry zipEntry in zf)
+                    {
+                        // Ignore directories
+                        if (!zipEntry.IsFile)
+                            continue;
+
+                        string entryFileName = zipEntry.Name;
+
+                        // Skip .DS_Store files (these appear on OSX)
+                        if (entryFileName.Contains("DS_Store"))
+                            continue;
+
+                        Debug.Log("Unpacking zip file entry: " + entryFileName);
+
+                        byte[] buffer = new byte[4096];     // 4K is optimum
+                        Stream zipStream = zf.GetInputStream(zipEntry);
+
+                        // Manipulate the output filename here as desired.
+                        string folderPath = zipPath.Remove(zipPath.LastIndexOf('\\'));
+                        string fullZipToPath = folderPath + "\\" + Path.GetFileName(entryFileName);
+
+                        // Unzip file in buffered chunks. This is just as fast as unpacking to a buffer the full size
+                        // of the file, but does not waste memory.
+                        // The "using" will close the stream even if an exception occurs.
+                        using (FileStream streamWriter = File.Create(fullZipToPath))
+                        {
+                            StreamUtils.Copy(zipStream, streamWriter, buffer);
+                        }
+                        numFiles++;
+                    }
+
+                    zf.IsStreamOwner = false;
+                    zf.Close();
+                    fs.Close();
+                }
+            }
+            catch
+            {
+                Debug.Log("Zip file error!");
+            }
+        }
     }
 
     #endregion

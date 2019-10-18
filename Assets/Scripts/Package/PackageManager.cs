@@ -1,5 +1,7 @@
 ﻿using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using Vizlab;
 
@@ -18,6 +20,7 @@ public class PackageManager : MonoBehaviour
     //SCENE DATA
     private List<GDC> loadedGDCs = new List<GDC>();
     private GameObject route;
+
 
     private void CreateLineRendererRoute()
     {
@@ -95,26 +98,45 @@ public class PackageManager : MonoBehaviour
     {
         foreach (SO_PackageData.gdc_data item in SO_PackageData.instance.gdcs)
         {
-            GDC gdc = new GDC(item.id, item.name, item.latitude, item.longitude);
+            GDC gdc = new GDC(item.name, item.description, item.latitude, item.longitude);
+
+            foreach (SO_PackageData.gdc_element element in item.elements)
+            {
+                //Convert string to enum
+                Enum.TryParse(element.type, out ElementType type);
+
+                switch (type)
+                {
+                    case ElementType.Sample:
+                        //Helper.UnzipFile(rootPath + element.relativePath);
+                        break;
+                    case ElementType.Panoramic:
+                        //gdc.Panoramic = new Panoramic(item.panoramic.name, rootPath + item.panoramic.path);
+                        break;
+                    case ElementType.File:
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             //Check if exists 3d model on gdc item
-            if (!string.IsNullOrEmpty(item.model3D.texturePath) &&
-                !string.IsNullOrEmpty(item.model3D.modelPath))
-            {
-                gdc.Model3D = new Model3D(item.model3D.name, rootPath + item.model3D.texturePath, rootPath + item.model3D.modelPath);
-            }
+            //if (!string.IsNullOrEmpty(item.model3D.texturePath) &&
+            //    !string.IsNullOrEmpty(item.model3D.modelPath))
+            //{
+            //    gdc.Model3D = new Model3D(item.model3D.name, rootPath + item.model3D.texturePath, rootPath + item.model3D.modelPath);
+            //}
 
-            //Check if exists panoramic on gdc item
-            if (!string.IsNullOrEmpty(item.panoramic.path))
-            {
-                gdc.Panoramic = new Panoramic(item.panoramic.name, rootPath + item.panoramic.path);
-            }
+            ////Check if exists panoramic on gdc item
+            //if (!string.IsNullOrEmpty(item.panoramic.path))
+            //{
+            //    gdc.Panoramic = new Panoramic(item.panoramic.name, rootPath + item.panoramic.path);
+            //}
 
-            AddInteractiveObjectToGDC(ref gdc);
-            loadedGDCs.Add(gdc);
+            //AddInteractiveObjectToGDC(ref gdc);
+            //loadedGDCs.Add(gdc);
         }
     }
-
 
 
     private void LoadFromOpenTopography(Helper.WGS84 coordinates)
@@ -161,9 +183,14 @@ public class PackageManager : MonoBehaviour
     {
         rootPath = SO_PackageData.SelectPackage(path);
         SO_PackageData.Init();
+        
+        //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
 
         //Load heightmap texture by package
-        Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
+        Helper.WGS84 coordinates;
+        //Read Geotiff image downloaded, set the coordinates and the heightTexture
+        Texture2D tex;
+        Helper.LoadGeotiffData(SO_PackageData.instance.geoTiffPath, out coordinates, out tex);
         terrainManager.LoadTerrain(tex);
 
         //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
@@ -179,8 +206,13 @@ public class PackageManager : MonoBehaviour
         rootPath = SO_PackageData.SelectPackageFromFileBrowser();
         SO_PackageData.Init();
 
+        //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
+
         //Load heightmap texture by package
-        Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
+        Helper.WGS84 coordinates;
+        //Read Geotiff image downloaded, set the coordinates and the heightTexture
+        Texture2D tex;
+        Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out coordinates, out tex);
         terrainManager.LoadTerrain(tex);
 
         //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)

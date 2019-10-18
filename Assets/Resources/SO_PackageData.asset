@@ -12,13 +12,90 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cc0d026102c6fa49a2781bff9113939, type: 3}
   m_Name: SO_PackageData
   m_EditorClassIdentifier: 
-  name: 
-  description: 
-  maxHeight: 0
-  animationSpeed: 0
-  heightMapPath: 
-  colorMapPath: 
+  name: TestPackage
+  description: TestPackage description
   latitude: 0
   longitude: 0
+  geoTiffPath: heightmap.tif
   kmlPath: 
-  geoTiffPath: 
+  boundries: 
+  gdcs:
+  - name: GDC_01
+    description: First GDC
+    latitude: 37.72779
+    longitude: -119.559364
+    elements:
+    - name: Sample RH01
+      description: Sample RH01
+      latitude: 37.72779
+      longitude: -119.559364
+      type: 0
+      relativePath: GDCs/GDC_01/sample_01.zip
+    - name: Descritive PDF
+      description: Laboratorial Study - Geochemistry
+      latitude: 0
+      longitude: 0
+      type: 0
+      relativePath: GDCs/GDC_01/geochemistry.png
+    - name: Field Panoramic
+      description: panoramic image of the field where sample was colected
+      latitude: 37.729424
+      longitude: -119.57164
+      type: 0
+      relativePath: GDCs/GDC_01/Halfdome.jpg
+  - name: GDC_2
+    description: General study of area
+    latitude: 37.725304
+    longitude: -119.53282
+    elements:
+    - name: Area Study PDF
+      description: PDF with the area study
+      latitude: 0
+      longitude: 0
+      type: 0
+      relativePath: GDCs/GDC_2/paper 240.pdf
+  - name: GDC_03
+    description: Panoramic view
+    latitude: 37.723164
+    longitude: -119.58465
+    elements:
+    - name: Panoramic View
+      description: Panoramic of the area
+      latitude: 37.723164
+      longitude: -119.58465
+      type: 0
+      relativePath: GDCs/GDC_03/Eaglepoint.jpg
+    - name: Ambient Sound
+      description: Audio clip with ambient sound
+      latitude: 0
+      longitude: 0
+      type: 0
+      relativePath: GDCs/GDC_03/night2.mp3
+  - name: GDC_04
+    description: Local Sample
+    latitude: 37.74495
+    longitude: -119.534
+    elements:
+    - name: Local Sample
+      description: Calcite sample
+      latitude: 37.74495
+      longitude: -119.534
+      type: 0
+      relativePath: GDCs/GDC_04/Sample_02.zip
+  - name: GDC_05
+    description: Generic Panoramic of the place
+    latitude: 37.722942
+    longitude: -119.63603
+    elements:
+    - name: generic panoramic
+      description: Generic panoramic of the place
+      latitude: 37.722942
+      longitude: -119.63603
+      type: 0
+      relativePath: GDCs/GDC_05/Taftpoint.jpg
+    - name: Generic picture
+      description: generic picture
+      latitude: 0
+      longitude: 0
+      type: 0
+      relativePath: GDCs/GDC_05/Image02.png
