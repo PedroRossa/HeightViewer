@@ -35,7 +35,7 @@ namespace Vizlab
             description = element.description;
             latitude = element.latitude;
             longitude = element.longitude;
-            type = ElementType.Sample;
+            type = ElementType.Panoramic;
             relativePath = element.relativePath;
             goPanoramic = null;
 
@@ -51,15 +51,16 @@ namespace Vizlab
 
             switch (extension)
             {
-                case "jpeg":
-                case "jpg":
-                case "png":
-                case "tif":
-                case "tiff":
+                case ".jpeg":
+                case ".jpg":
+                case ".png":
+                case ".tif":
+                case ".tiff":
                     goPanoramic = Helper.LoadPanoramicImage(name, panoramicPath);
+                    goPanoramic.SetActive(false);
                     break;
                 default:
-                    Debug.Log("Unknown extension detected on panoramic element object.");
+                    Debug.Log("Unknown extension detected on panoramic element object. Extension: " + extension);
                     break;
             }
         }

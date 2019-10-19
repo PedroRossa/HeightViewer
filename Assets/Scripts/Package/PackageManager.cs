@@ -55,21 +55,30 @@ public class PackageManager : MonoBehaviour
         lr.Simplify(5);
     }
     
+    //TODO: CHECK WUY PINS DON'T STAY IN RIGHT PLACE
     private void AddInteractiveObjectToGDC(ref GDC gdc)
     {
+        //Ver como converter certinho lat long pro mapa
         double horizontalSize = limits.east - limits.west;
         double verticalSize = limits.north - limits.south;
-
-        InteractiveObject io = gdc.GoModel.AddComponent<InteractiveObject>();
         
         double auxLong = gdc.Longitude - limits.west;
         double auxLat = gdc.Latitude - limits.south;
 
         double calculatedX = terrainManager.width * auxLong / horizontalSize;
         double calculatedY = terrainManager.height * auxLat / verticalSize;
+
+        Vector2 diffFromTex = terrainManager.terrain.GetDifferenceFromTexture();
+        
+        //calculatedX = calculatedX + diffFromTex.x;
+        //calculatedY = calculatedY + diffFromTex.y;
+
         float auxHeight = terrainManager.terrain.GetTexture().GetPixel((int)calculatedX, (int)calculatedY).r;
 
         Vector3 pos = new Vector3((float)calculatedX, auxHeight * terrainManager.maxHeight, (float)calculatedY);
+
+
+        InteractiveObject io = gdc.GoModel.AddComponent<InteractiveObject>();
 
         //Put element inside of map to positionate correctly
         io.SetParent(terrainManager.transform);
@@ -95,7 +104,7 @@ public class PackageManager : MonoBehaviour
                 switch (type)
                 {
                     case ElementType.Sample:
-                        Helper.UnzipFile(rootPath + currElement.relativePath);
+                        //Helper.UnzipFile(rootPath + currElement.relativePath);
                         newElement = new GDCElementSample(currElement, rootPath);
                         break;
                     case ElementType.Panoramic:
@@ -106,31 +115,15 @@ public class PackageManager : MonoBehaviour
                         newElement = new GDCElementFile(currElement, rootPath);
                         break;
                     default:
-                        Debug.Log("Unknown element type detected.");
+                        Debug.Log("Unknown element type detected. Type: " + type);
                         continue;
                 }
                 gdc.Elements.Add(newElement);
             }
 
-            gdc.SetInteractiveModel(RepresentativeModel.SAMPLE);
+            gdc.SetInteractiveModel();
             AddInteractiveObjectToGDC(ref gdc);
             loadedGDCs.Add(gdc);
-
-            //Check if exists 3d model on gdc item
-            //if (!string.IsNullOrEmpty(item.model3D.texturePath) &&
-            //    !string.IsNullOrEmpty(item.model3D.modelPath))
-            //{
-            //    gdc.Model3D = new Model3D(item.model3D.name, rootPath + item.model3D.texturePath, rootPath + item.model3D.modelPath);
-            //}
-
-            ////Check if exists panoramic on gdc item
-            //if (!string.IsNullOrEmpty(item.panoramic.path))
-            //{
-            //    gdc.Panoramic = new Panoramic(item.panoramic.name, rootPath + item.panoramic.path);
-            //}
-
-            //AddInteractiveObjectToGDC(ref gdc);
-            //loadedGDCs.Add(gdc);
         }
     }
 
@@ -181,16 +174,13 @@ public class PackageManager : MonoBehaviour
         SO_PackageData.Init();
         
         //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
-
-        //Load heightmap texture by package
-        Helper.WGS84 coordinates;
+        
         //Read Geotiff image downloaded, set the coordinates and the heightTexture
         Texture2D tex;
-        Helper.LoadGeotiffData(SO_PackageData.instance.geoTiffPath, out coordinates, out tex);
+        Helper.LoadGeotiffData(SO_PackageData.instance.geoTiffPath, out limits, out tex);
         terrainManager.LoadTerrain(tex);
-
-        //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
-        limits = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
+        
+        //limits are got on geotif reading
 
         CreateGDCs();
         CreateLineRendererRoute();
@@ -203,16 +193,13 @@ public class PackageManager : MonoBehaviour
         SO_PackageData.Init();
 
         //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
-
-        //Load heightmap texture by package
-        Helper.WGS84 coordinates;
+        
         //Read Geotiff image downloaded, set the coordinates and the heightTexture
         Texture2D tex;
-        Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out coordinates, out tex);
+        Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
         terrainManager.LoadTerrain(tex);
 
-        //TODO: AQUI PRECISO VER COMO PEGAR A COORDENADA DO HEIGHTMAP (ACHO QUE ADD NO PACKAGE ISSO É O MAIS FACIL)
-        limits = new Helper.WGS84(-119.65227127075197, 37.69903420794415, -119.52283859252931, 37.77804178967591);
+        //limits are got on geotif reading
 
         CreateGDCs();
         CreateLineRendererRoute();

@@ -35,7 +35,7 @@ namespace Vizlab
             description = element.description;
             latitude = element.latitude;
             longitude = element.longitude;
-            type = ElementType.Sample;
+            type = ElementType.File;
             relativePath = element.relativePath;
             goFile = null;
 
@@ -52,26 +52,26 @@ namespace Vizlab
 
             switch (extension)
             {
-                case "jpeg":
-                case "jpg":
-                case "png":
-                case "tif":
-                case "tiff":
+                case ".jpeg":
+                case ".jpg":
+                case ".png":
+                case ".tif":
+                case ".tiff":
                     //TODO: Load gameObject as image
                     //goFile = Helper.LoadImageAsTexture(filePath);
                     break;
-                case "mp3":
-                case "wav":
+                case ".mp3":
+                case ".wav":
                     //TODO: Load gameObject as audioClip
                     break;
-                    case "pdf":
+                    case ".pdf":
                     //TODO: Load gameobject as pdf
                     break;
-                case "txt":
+                case ".txt":
                     //TODO: Load gameobject as text
 
                 default:
-                    Debug.Log("Unknown extension detected on panoramic element object.");
+                    Debug.Log("Unknown extension detected on panoramic element object. Extension: " + extension);
                     break;
             }
         }

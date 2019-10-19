@@ -8,9 +8,8 @@ public class Terrain
     private int width;
     private int height;
     private int maxHeight;
-    private int diffFromTex_w;
-    private int diffFromTex_h;
     private Texture2D texture;
+    private Vector2 differenceFromTexture;
 
     #endregion
 
@@ -21,6 +20,7 @@ public class Terrain
         this.width = width;
         this.height = height;
         this.maxHeight = maxHeight;
+        differenceFromTexture = new Vector2();
     }
 
     #endregion
@@ -29,8 +29,8 @@ public class Terrain
 
     private void CalculateDiffFromTerrainToTexture()
     {
-        diffFromTex_w = (width - texture.width) / 2;
-        diffFromTex_h = (height - texture.height) / 2;
+        differenceFromTexture.x = (width - texture.width) / 2;
+        differenceFromTexture.y = (height - texture.height) / 2;
     }
 
     #endregion
@@ -49,18 +49,26 @@ public class Terrain
         CalculateDiffFromTerrainToTexture();
     }
 
+    public Vector2 GetDifferenceFromTexture()
+    {
+        return differenceFromTexture;
+    }
+
     public Vector3[] CalculateVertices()
     {
         Vector3[] vertices = new Vector3[width * height];
+        int diffX = (int)differenceFromTexture.x;
+        int diffY = (int)differenceFromTexture.y;
+
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
                 int currIndex = j + i * width;
-                if ((j - diffFromTex_w) < texture.width && j > diffFromTex_w &&
-                    (i - diffFromTex_h) < texture.height && i > diffFromTex_h)
+                if ((j - diffX) < texture.width && j > diffX &&
+                    (i - diffY) < texture.height && i > diffY)
                 {
-                    float currHeight = texture.GetPixel(j - diffFromTex_w, i - diffFromTex_h).r;
+                    float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
                     vertices[currIndex] = new Vector3(j, currHeight * maxHeight, i);
                 }
                 else
@@ -75,6 +83,8 @@ public class Terrain
     public Color[] ColorizeVertices(Color color)
     {
         Color[] colors = new Color[width * height];
+        int diffX = (int)differenceFromTexture.x;
+        int diffY = (int)differenceFromTexture.y;
 
         for (int i = 0; i < height; i++)
         {
@@ -82,10 +92,10 @@ public class Terrain
             {
                 int currIndex = j + i * width;
 
-                if ((j - diffFromTex_w) < texture.width && j > diffFromTex_w &&
-                    (i - diffFromTex_h) < texture.height && i > diffFromTex_h)
+                if ((j - diffX) < texture.width && j > diffX &&
+                    (i - diffY) < texture.height && i > diffY)
                 {
-                    float currHeight = texture.GetPixel(j - diffFromTex_w, i - diffFromTex_h).r;
+                    float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
                     colors[currIndex] = color * currHeight;
                 }
                 else
@@ -100,6 +110,8 @@ public class Terrain
     public Color[] ColorizeVertices(Gradient gradient)
     {
         Color[] colors = new Color[width * height];
+        int diffX = (int)differenceFromTexture.x;
+        int diffY = (int)differenceFromTexture.y;
 
         for (int i = 0; i < height; i++)
         {
@@ -107,10 +119,10 @@ public class Terrain
             {
                 int currIndex = j + i * width;
 
-                if ((j - diffFromTex_w) < texture.width && j > diffFromTex_w &&
-                    (i - diffFromTex_h) < texture.height && i > diffFromTex_h)
+                if ((j - diffX) < texture.width && j > diffX &&
+                    (i - diffY) < texture.height && i > diffY)
                 {
-                    float currHeight = texture.GetPixel(j - diffFromTex_w, i - diffFromTex_h).r;
+                    float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
                     colors[currIndex] = gradient.Evaluate(currHeight);
                 }
                 else

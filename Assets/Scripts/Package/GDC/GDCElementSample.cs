@@ -58,18 +58,18 @@ namespace Vizlab
 
                 switch (extension)
                 {
-                    case "dlm":
+                    case ".dlm":
                         modelPath = currPath;
                         break;
-                    case "jpeg":
-                    case "jpg":
-                    case "png":
-                    case "tif":
-                    case "tiff":
+                    case ".jpeg":
+                    case ".jpg":
+                    case ".png":
+                    case ".tif":
+                    case ".tiff":
                         texturePath = currPath;
                         break;
                     default:
-                        Debug.Log("Unknown extension detected on sample element object.");
+                        Debug.Log("Unknown extension detected on panoramic element object. Extension: " + extension);
                         break;
                 }
             }
@@ -77,6 +77,7 @@ namespace Vizlab
             if (!string.IsNullOrEmpty(texturePath) && !string.IsNullOrEmpty(modelPath))
             {
                 goModel = Helper.Load3DModel(name, modelPath, texturePath);
+                goModel.SetActive(false);
             }
         }
     }

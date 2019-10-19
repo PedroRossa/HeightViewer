@@ -3,17 +3,11 @@ using UnityEngine;
 
 namespace Vizlab
 {
-    public enum RepresentativeModel
-    {
-        SAMPLE,
-        PANORAMIC,
-        FILE
-    }
     //GDC Geo-referenced Data Container
-    public class GDC
+    public class GDC : MonoBehaviour
     {
         #region Attributes
-        
+
         protected string name;
         protected string description;
         protected float latitude;
@@ -54,22 +48,16 @@ namespace Vizlab
 
         #endregion
 
-        public void SetInteractiveModel(RepresentativeModel modelType)
+        /// <summary>
+        /// Set simple primitive as InteractiveModel.
+        /// Call after set all elements of the GDC
+        /// </summary>
+        /// <param name="modelType"></param>
+        public void SetInteractiveModel()
         {
-            switch (modelType)
-            {
-                case RepresentativeModel.SAMPLE:
-                    goModel = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    break;
-                case RepresentativeModel.PANORAMIC:
-                    goModel = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    break;
-                case RepresentativeModel.FILE:
-                    goModel = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                    break;
-                default:
-                    break;
-            }
+            goModel = Instantiate(Resources.Load("GDCRoot", typeof(GameObject)) as GameObject);
+            GDCRoot gdcRoot = goModel.GetComponent<GDCRoot>();
+            gdcRoot.InitializeData(this);
         }
     }
 }
