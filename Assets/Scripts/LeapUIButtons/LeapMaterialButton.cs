@@ -5,13 +5,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(InteractionBehaviour), typeof(Image))]
-public class LeapUIButton : MonoBehaviour
+[RequireComponent(typeof(InteractionBehaviour))]
+public class LeapMaterialButton : MonoBehaviour
 {
     [Header("Properties")]
-    public VectorImageData icon;
-    public Text txtTextValue;
-    public string textValue;
     public bool fillHover;
 
     [Header("Events")]
@@ -33,14 +30,8 @@ public class LeapUIButton : MonoBehaviour
         imgHover = GetComponent<Image>();
 
         btnMaterial = GetComponentInChildren<MaterialButton>();
-        txtTextValue = GetComponentInChildren<Text>();
-
-        //set icon to button
-        btnMaterial.iconVectorImageData = icon;
-
+        
         imgHover.fillCenter = fillHover;
-
-        txtTextValue.text = textValue;
 
         //Add highlight behavior on contact begin-end
         interactionBehaviour.OnContactBegin += OnContactBegin;
