@@ -204,7 +204,7 @@ MonoBehaviour:
   imgBackground: {fileID: 3601064482797054356}
   imgIcon: {fileID: 7281964387283999349}
   defaultColor: {r: 0, g: 0, b: 0, a: 0}
-  hoverColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  hoverColor: {r: 0.5504183, g: 0.8773585, b: 0.76119715, a: 1}
   contactColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &7180924094707305002
 GameObject:

@@ -3,11 +3,19 @@ using MaterialUI;
 using TMPro;
 using Vizlab;
 using NaughtyAttributes;
+using Leap.Unity.Interaction;
+using System;
+using System.Collections;
 
+[RequireComponent(typeof(AnchorableBehaviour), typeof(InteractionBehaviour))]
 public class GDCRoot : MonoBehaviour
 {
     private Canvas canvas;
-    private GDC gdc;
+    public GDC gdc;
+
+    private AnchorableBehaviour anchorableBehaviour;
+    private InteractionBehaviour interactionBehaviour;
+    private Rigidbody rigidbody;
 
     [Header("Sample Properties")]
     public GameObject sampleNotificationBallon;
@@ -29,8 +37,43 @@ public class GDCRoot : MonoBehaviour
 
     [Header("General Properties")]
     public bool isGrasped;
-    
-    
+
+    private void Awake()
+    {
+        anchorableBehaviour = GetComponent<AnchorableBehaviour>();
+        interactionBehaviour = GetComponent<InteractionBehaviour>();
+        rigidbody = GetComponent<Rigidbody>();
+
+        rigidbody.useGravity = false;
+        rigidbody.isKinematic = true;
+
+        anchorableBehaviour.interactionBehaviour = interactionBehaviour;
+        anchorableBehaviour.anchorRotation = true;
+
+        anchorableBehaviour.OnAttachedToAnchor += AttachedToAnchor;
+        anchorableBehaviour.OnDetachedFromAnchor += DettachedFromAnchor;
+    }
+
+    private void AttachedToAnchor()
+    {
+        anchorableBehaviour.anchor.GetComponentInParent<InteractivePanel>().Initialize(this);
+    }
+
+    private void DettachedFromAnchor()
+    {
+        //Wait some time after dettach to avoid inifinte attachment
+        StartCoroutine(DettachCoroutine());
+    }
+
+    IEnumerator DettachCoroutine()
+    {
+        anchorableBehaviour.enabled = false;
+        anchorableBehaviour.anchor.GetComponentInParent<InteractivePanel>().Clear();
+        yield return new WaitForSeconds(3);
+
+        anchorableBehaviour.enabled = true;
+    }
+
     void Update()
     {
         LookAtCamera();

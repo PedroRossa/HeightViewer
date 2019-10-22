@@ -9,7 +9,6 @@ public class InteractiveCarrousel2D : MonoBehaviour
     public Transform contentTransform;
     public IconButton2D btnToLeft;
     public IconButton2D btnToRight;
-    public GameObject noDataPanel;
 
     private List<GameObject> elements = new List<GameObject>();
     private int currentElement = 0;
@@ -20,14 +19,12 @@ public class InteractiveCarrousel2D : MonoBehaviour
 
     void Start()
     {
-        UpdateCarrouselButton();
-        UpdateNoDataPanel();
-
-        CreateDisabledElementsContentObject();
-
         //Add behaviours of left and right buttons
         btnToLeft.GetComponent<InteractionButton>().OnContactEnd += MoveToLeft;
         btnToRight.GetComponent<InteractionButton>().OnContactEnd += MoveToRight;
+
+        CreateDisabledElementsContentObject();
+        UpdateCarrouselButton();
     }
 
     private void CreateDisabledElementsContentObject()
@@ -43,25 +40,11 @@ public class InteractiveCarrousel2D : MonoBehaviour
 
         disabledContentTransform = disabledElementsObject.transform;
     }
-
-    private void UpdateNoDataPanel()
-    {
-        //Check number of elements on list
-        if (numberOfElements <= 0)
-        {
-            noDataPanel.SetActive(true);
-            return;
-        }
-        else
-        {
-            noDataPanel.SetActive(false);
-        }
-    }
-
+    
     private void UpdateCarrouselButton()
     {
         //Manage buttons based on current element selected
-        if(numberOfElements == 1)
+        if(numberOfElements <= 1)
         {
             btnToLeft.DisableButton();
             btnToRight.DisableButton();
@@ -86,7 +69,32 @@ public class InteractiveCarrousel2D : MonoBehaviour
 
     }
 
-    private void ClearCarrousel()
+    private GameObject CreateCarrouselElement(string name, Sprite sprite = null)
+    {
+        //Instantiate a new InteractivePanel Element
+        GameObject go = Instantiate(Resources.Load("InteractivePanel/InteractivePanelElement", typeof(GameObject))) as GameObject;
+
+        go.GetComponentInChildren<Text>().text = name;
+
+        if (sprite != null)
+        {
+            go.GetComponentInChildren<Image>().sprite = sprite;
+        }
+
+        //Put the element on disabled objects
+        go.transform.SetParent(disabledContentTransform);
+
+        go.transform.localPosition = Vector3.zero;
+        go.transform.localRotation = Quaternion.identity;
+        go.transform.localScale = Vector3.one;
+
+        elements.Add(go);
+
+        return go;
+    }
+
+
+    public void ClearCarrousel()
     {
         //Clear List
         elements.Clear();
@@ -99,8 +107,8 @@ public class InteractiveCarrousel2D : MonoBehaviour
 
         //Recreate disabledElementsTransform
         CreateDisabledElementsContentObject();
+        UpdateCarrouselButton();
     }
-
 
     public void MoveToLeft()
     {
@@ -132,10 +140,22 @@ public class InteractiveCarrousel2D : MonoBehaviour
         UpdateCarrouselButton();
     }
 
-    public void AddElement(GameObject element)
+    public void AddElement(GameObject go)
     {
-        elements.Add(element);
+        //TODO: Preciso achar uma forma de salvar o modelo que vem do GDC em algum lugar (pelo menos a referencia)
+
+        CreateCarrouselElement(go.name);
         numberOfElements = elements.Count;
+
+        SetFirstElement();
+    }
+
+    public void AddElement(string name, Sprite spt = null)
+    {
+        CreateCarrouselElement(name, spt);
+        numberOfElements = elements.Count;
+
+        SetFirstElement();
     }
 
     public void RemoveElement(int id)
@@ -151,6 +171,11 @@ public class InteractiveCarrousel2D : MonoBehaviour
         }
     }
 
+    public GameObject GetCurrentElement()
+    {
+        return elements[currentElement - 1];
+    }
+
 
     [Button]
     public void MockDataToCarrousel()
@@ -161,28 +186,17 @@ public class InteractiveCarrousel2D : MonoBehaviour
 
         for (int i = 0; i < rand; i++)
         {
-            //Instantiate a new InteractivePanel Element
-            GameObject go = Instantiate(Resources.Load("InteractivePanel/InteractivePanelElement", typeof(GameObject))) as GameObject;
-            //Add a random color to image
-            go.GetComponentInChildren<Image>().color = new Color(Random.value, Random.value, Random.value, 1);
-            //Set the name of element
-            go.GetComponentInChildren<Text>().text = "Element_" + i.ToString();
-
-            //Put the element on disabled objects
-            go.transform.SetParent(disabledContentTransform);
-
-            go.transform.localPosition = Vector3.zero;
-            go.transform.localRotation = Quaternion.identity;
-            go.transform.localScale = Vector3.one;
-
-            elements.Add(go);
+           CreateCarrouselElement("Element_" + i.ToString());
         }
 
         numberOfElements = elements.Count;
+        SetFirstElement();
+    }
+
+    private void SetFirstElement()
+    {
         elements[0].transform.SetParent(contentTransform);
         currentElement = 1;
-
-        UpdateNoDataPanel();
         UpdateCarrouselButton();
     }
 }
