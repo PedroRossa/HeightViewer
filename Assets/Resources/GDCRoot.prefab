@@ -600,15 +600,15 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: \ue88f
+  m_Text: \ue55c
   m_Size: 24
   m_ScaledSize: 0
   m_SizeMode: 3
   m_MaterialUiScaler: {fileID: 1160063837671247167}
   m_VectorImageData:
     m_Glyph:
-      m_Name: info_outline
-      m_Unicode: \ue88f
+      m_Name: my_location
+      m_Unicode: \ue55c
     m_Font: {fileID: 12800000, guid: a0a40789b9baa45a68c6d593e02f648a, type: 3}
 --- !u!1 &4449683829619743898
 GameObject:

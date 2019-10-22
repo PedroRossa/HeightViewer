@@ -163,10 +163,7 @@ public class PackageManager : MonoBehaviour
         loadingFromOpenTopography = false;
         loadingFinished = true;
     }
-
-
-
-
+    
 
     public void LoadPackage(string path)
     {
@@ -177,7 +174,7 @@ public class PackageManager : MonoBehaviour
         
         //Read Geotiff image downloaded, set the coordinates and the heightTexture
         Texture2D tex;
-        Helper.LoadGeotiffData(SO_PackageData.instance.geoTiffPath, out limits, out tex);
+        Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
         terrainManager.LoadTerrain(tex);
         
         //limits are got on geotif reading
