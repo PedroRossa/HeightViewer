@@ -1,15 +1,29 @@
-﻿using TMPro;
+﻿using Leap.Unity.Interaction;
+using TMPro;
 using UnityEngine;
 
 public class TooltipElement : MonoBehaviour
 {
-    private TextMeshPro txtMessage;
     public string message;
+
+    private TextMeshPro txtMessage;
+    private InteractionButton interactionButton;
 
     void Awake()
     {
         txtMessage = GetComponentInChildren<TextMeshPro>();
         txtMessage.SetText(message);
+
+        interactionButton = GetComponentInParent<InteractionButton>();
+
+        //Set button events that this tooltip is child
+        if(interactionButton != null)
+        {
+            interactionButton.OnPrimaryHoverBegin += ShowTooltip;
+
+            interactionButton.OnContactBegin += HideTooltip;
+            interactionButton.OnPrimaryHoverEnd += HideTooltip;
+        }
     }
 
     public void SetText(string text)

@@ -14,6 +14,7 @@ public class PackageManager : MonoBehaviour
     public bool loadingFinished;
 
     public Helper.WGS84 limits;
+    public List<Package> packages = new List<Package>();
 
     private string rootPath;
 
@@ -31,7 +32,7 @@ public class PackageManager : MonoBehaviour
 
         List<Vector3> routePositions = Helper.RouteDataFromKML(rootPath + SO_PackageData.instance.kmlPath, terrainManager, limits);
 
-        if(routePositions.Count <= 0)
+        if (routePositions.Count <= 0)
         {
             return;
         }
@@ -55,28 +56,9 @@ public class PackageManager : MonoBehaviour
         lr.Simplify(5);
     }
     
-    //TODO: CHECK WUY PINS DON'T STAY IN RIGHT PLACE
     private void AddInteractiveObjectToGDC(ref GDC gdc)
     {
-        //Ver como converter certinho lat long pro mapa
-        double horizontalSize = limits.east - limits.west;
-        double verticalSize = limits.north - limits.south;
-        
-        double auxLong = gdc.Longitude - limits.west;
-        double auxLat = gdc.Latitude - limits.south;
-
-        double calculatedX = terrainManager.width * auxLong / horizontalSize;
-        double calculatedY = terrainManager.height * auxLat / verticalSize;
-
-        Vector2 diffFromTex = terrainManager.terrain.GetDifferenceFromTexture();
-        
-        //calculatedX = calculatedX + diffFromTex.x;
-        //calculatedY = calculatedY + diffFromTex.y;
-
-        float auxHeight = terrainManager.terrain.GetTexture().GetPixel((int)calculatedX, (int)calculatedY).r;
-
-        Vector3 pos = new Vector3((float)calculatedX, auxHeight * terrainManager.maxHeight, (float)calculatedY);
-
+        Vector3 pos = terrainManager.GetPositionOnMapByLatLon(limits, gdc.Latitude, gdc.Longitude);
 
         InteractiveObject io = gdc.GoModel.AddComponent<InteractiveObject>();
 
@@ -105,14 +87,14 @@ public class PackageManager : MonoBehaviour
                 {
                     case ElementType.Sample:
                         //Helper.UnzipFile(rootPath + currElement.relativePath);
-                        newElement = new GDCElementSample(currElement, rootPath);
+                        newElement = new GDCElementSample(currElement, rootPath, gdc.ElementsContentTransform);
                         break;
                     case ElementType.Panoramic:
-                        newElement = new GDCElementPanoramic(currElement, rootPath);
-                        //gdc.Panoramic = new Panoramic(item.panoramic.name, rootPath + item.panoramic.path);
-                        break;
+                        newElement = new GDCElementPanoramic(currElement, rootPath, gdc.ElementsContentTransform);
+                         break;
                     case ElementType.File:
-                        newElement = new GDCElementFile(currElement, rootPath);
+                        newElement = new GDCElementFile(currElement, rootPath, gdc.ElementsContentTransform);
+                        //((GDCElementFile)newElement).GoFile.transform.SetParent(gdc.ElementsContentTransform);
                         break;
                     default:
                         Debug.Log("Unknown element type detected. Type: " + type);
@@ -120,8 +102,8 @@ public class PackageManager : MonoBehaviour
                 }
                 gdc.Elements.Add(newElement);
             }
+            gdc.ConfigureGDCRootObject();
 
-            gdc.SetInteractiveModel();
             AddInteractiveObjectToGDC(ref gdc);
             loadedGDCs.Add(gdc);
         }
@@ -136,12 +118,8 @@ public class PackageManager : MonoBehaviour
 
         StartCoroutine(OpenTopographyAPI.DownloadGeoTiff(element, "C:/", "myFile", DownloadedGeoTiffCallback));
     }
-
-    private void LoadPackagePins()
-    {
-        //TODO: Create a PIN to every Package. Add pins on world Map
-    }
     
+
     public void DownloadedGeoTiffCallback(string path, int responseCode)
     {
         if (!string.IsNullOrEmpty(path))
@@ -163,20 +141,83 @@ public class PackageManager : MonoBehaviour
         loadingFromOpenTopography = false;
         loadingFinished = true;
     }
-    
+
+
+    //Function to read folder with packages and create content inside of project
+    [Button]
+    public void LoadPackages()
+    {
+        //Load world heightmap texture 
+        Texture2D tex = Resources.Load("worldHeightMap", typeof(Texture2D)) as Texture2D;
+        terrainManager.LoadTerrain(tex);
+
+        string root = "";
+#if UNITY_EDITOR
+        root = "C:\\MOSIS_LAB\\Packages";
+#else
+        root = Application.dataPath + "\\" + Packages;
+#endif
+
+        //Check if packages directory exists, if not, create!
+        if (!Directory.Exists(root))
+        {
+            Directory.CreateDirectory(root);
+        }
+
+        string[] packagesPaths = Directory.GetDirectories(root);
+
+        foreach (var item in packagesPaths)
+        {
+            //If the folder don't contains a package.json, so it isn't a valid package
+            if (!File.Exists(item + "\\gdcPackage.json"))
+            {
+                continue;
+            }
+
+            //TODO: VER AQUI PRA ADAPTAR O SO_PACKAGEDATA PARA UMA LISTA DE PACKAGES
+
+            //Get Json properties using SO
+            rootPath = SO_PackageData.SelectPackage(item + "\\gdcPackage.json");
+            SO_PackageData.Init();
+            
+            GameObject go = Instantiate(Resources.Load("PinObject", typeof(GameObject)) as GameObject);
+
+            Package package = go.AddComponent<Package>();
+            package.Initialize(SO_PackageData.instance);
+
+            go.name = "PIN_" + package.name;
+            
+            Helper.WGS84 worldLimits = new Helper.WGS84(-180, -90, 180, 90);
+            float lat = package.latitude;
+            float lon = package.longitude;
+            Vector3 pos = terrainManager.GetPositionOnMapByLatLon(worldLimits, lat, lon);
+
+            //Put element inside of map to positionate correctly
+            go.transform.SetParent(terrainManager.transform);
+            go.transform.localPosition = pos;
+
+            //then put element out to correct scale
+            go.transform.SetParent(loadedElementsTransform);
+            go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+
+            packages.Add(package);
+        }
+    }
+
 
     public void LoadPackage(string path)
     {
+        ClearScene();
         rootPath = SO_PackageData.SelectPackage(path);
         SO_PackageData.Init();
-        
+
         //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
-        
+
         //Read Geotiff image downloaded, set the coordinates and the heightTexture
         Texture2D tex;
         Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
         terrainManager.LoadTerrain(tex);
-        
+
         //limits are got on geotif reading
 
         CreateGDCs();
@@ -186,11 +227,12 @@ public class PackageManager : MonoBehaviour
     [Button]
     public void LoadPackage()
     {
+        ClearScene();
         rootPath = SO_PackageData.SelectPackageFromFileBrowser();
         SO_PackageData.Init();
 
         //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
-        
+
         //Read Geotiff image downloaded, set the coordinates and the heightTexture
         Texture2D tex;
         Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
@@ -222,17 +264,9 @@ public class PackageManager : MonoBehaviour
         Destroy(route);
 
         //Delete Pins
-        for (int i = 0; i < transform.childCount; i++)
+        for (int i = 0; i < loadedElementsTransform.childCount; i++)
         {
-            Destroy(transform.GetChild(i).gameObject);
+            Destroy(loadedElementsTransform.GetChild(i).gameObject);
         }
-    }
-
-    [Button]
-    public void LoadWorldMapTerrain()
-    {
-        //Load world heightmap texture 
-        Texture2D tex = Resources.Load("worldHeightMap", typeof(Texture2D)) as Texture2D;
-        terrainManager.LoadTerrain(tex);
     }
 }

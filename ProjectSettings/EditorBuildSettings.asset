@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: f7040104075f2474eb16e4b4dcbfe947
+    path: Assets/Scenes/HolograficOffice.unity
+    guid: b3ab5d632116a48448a2bfe8ee23ac36
   m_configObjects: {}

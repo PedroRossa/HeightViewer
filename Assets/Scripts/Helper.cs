@@ -523,6 +523,26 @@ public class Helper : MonoBehaviour
     }
 
     #endregion
+
+    public static LineRenderer CreateLineRendererOnObject(GameObject go, float width, Color color)
+    {
+        LineRenderer lineRenderer = go.AddComponent<LineRenderer>();
+
+        lineRenderer.useWorldSpace = true;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
+
+        lineRenderer.startColor = color;
+        lineRenderer.endColor = color;
+
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, Vector3.zero);
+        lineRenderer.SetPosition(1, Vector3.zero);
+
+        return lineRenderer;
+    }
 }
 
 

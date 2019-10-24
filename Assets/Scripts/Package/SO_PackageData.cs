@@ -97,7 +97,7 @@ public class SO_PackageData : ScriptableObject
     public static string SelectPackage(string path)
     {
         fullPackagePath = path;
-        PlayerPrefs.SetString("SAVED_DATA", System.IO.File.ReadAllText(fullPackagePath));
+        PlayerPrefs.SetString("SAVED_DATA", File.ReadAllText(fullPackagePath));
 
         string fileName = Path.GetFileName(fullPackagePath);
         rootPath = fullPackagePath.Replace(fileName, "");

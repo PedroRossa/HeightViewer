@@ -24,15 +24,7 @@ public class InteractiveObject : MonoBehaviour
     {
         Initialize();
     }
-
-    private void Update()
-    {
-        if (interactionBehaviour.isGrasped)
-        {
-            UpdateLineRenderer();
-        }
-    }
-
+    
     private void CreatePrefabStructure()
     {
         element = this.gameObject;
@@ -90,40 +82,22 @@ public class InteractiveObject : MonoBehaviour
         rigidbody.isKinematic = true;
     }
     
-    private void InitializeLineRenderer()
-    {
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-
-        lineRenderer.useWorldSpace = true;
-        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-
-        lineRenderer.startWidth = lineRendererWidth;
-        lineRenderer.endWidth = lineRendererWidth;
-
-        lineRenderer.startColor = lineRendererColor;
-        lineRenderer.endColor = lineRendererColor;
-
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPosition(0, pinElement.anchorPosition.position);
-        lineRenderer.SetPosition(1, element.transform.position);
-
-    }
-
-    private void UpdateLineRenderer()
-    {
-        lineRenderer.SetPosition(0, pinElement.anchorPosition.position);
-        lineRenderer.SetPosition(1, element.transform.position);
-    }
-
-
     public void Initialize()
     {
         CreatePrefabStructure();
         InitializeObject();
 
         pinElement = pin.GetComponent<Pin3DElement>();
+        lineRenderer = Helper.CreateLineRendererOnObject(this.gameObject, lineRendererWidth, lineRendererColor);
+        MovingElement();
 
-        InitializeLineRenderer();
+        interactionBehaviour.OnGraspStay += MovingElement;
+    }
+    
+    private void MovingElement()
+    {
+        lineRenderer.SetPosition(0, pinElement.anchorPosition.position);
+        lineRenderer.SetPosition(1, element.transform.position);
     }
 
     public void SetPosition(Vector3 position, bool useWorldPosition = true)

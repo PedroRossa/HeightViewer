@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Leap.Unity.Interaction;
+using System.IO;
 using UnityEngine;
 
 namespace Vizlab
@@ -29,7 +30,7 @@ namespace Vizlab
             goFile = null;
         }
 
-        public GDCElementFile(SO_PackageData.gdc_element element, string rootPath)
+        public GDCElementFile(SO_PackageData.gdc_element element, string rootPath, Transform parent = null)
         {
             name = element.name;
             description = element.description;
@@ -38,6 +39,7 @@ namespace Vizlab
             type = ElementType.File;
             relativePath = element.relativePath;
             goFile = null;
+            parentTransform = parent;
 
             LoadData(rootPath);
         }
@@ -74,6 +76,21 @@ namespace Vizlab
                     Debug.Log("Unknown extension detected on panoramic element object. Extension: " + extension);
                     break;
             }
+            //goFile = Helper.LoadPanoramicImage(name, filePath);
+            //goFile.AddComponent<InteractionBehaviour>();
+            //goFile.AddComponent<SphereCollider>();
+
+            //goFile.GetComponent<Rigidbody>().isKinematic = true;
+            //goFile.GetComponent<Rigidbody>().useGravity = false;
+
+            //Helper.CreateLineRendererOnObject(goFile, 0.01f, Color.blue);
+
+            //if (parentTransform != null)
+            //{
+            //    goFile.transform.SetParent(parentTransform);
+            //}
+
+            //goFile.SetActive(false);
         }
     }
 }

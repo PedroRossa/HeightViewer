@@ -11,7 +11,7 @@ public class TerrainManager : MonoBehaviour
     private MeshRenderer meshRenderer;
     private MeshFilter meshFilter;
     private Mesh mesh;
-    
+
     [Header("Terrain Properties")]
     public int width = 512;
     public int height = 256;
@@ -21,7 +21,8 @@ public class TerrainManager : MonoBehaviour
     public Gradient gradient;
     public AnimationCurve animCurve;
     public float animationSpeed;
-    
+    public bool centrilize;
+
     void Start()
     {
         meshRenderer = GetComponent<MeshRenderer>();
@@ -35,7 +36,7 @@ public class TerrainManager : MonoBehaviour
 
         terrain = new Terrain(width, height, maxHeight);
     }
-       
+
 
     private void CreateVertices(ref Vector3[] vertices, ref Color[] colors)
     {
@@ -110,12 +111,15 @@ public class TerrainManager : MonoBehaviour
 
         mesh.UploadMeshData(false);
     }
-    
+
     private void SetHeight(bool useGradient)
     {
-        Vector3[] vertices = terrain.CalculateVertices();
-        Color[] colors = useGradient ? terrain.ColorizeVertices(gradient) : null;
-        
+        Vector3[] vertices;
+        Color[] colors;
+
+        vertices = terrain.CalculateVertices(centrilize);
+        colors = useGradient ? terrain.ColorizeVertices(gradient, centrilize) : null;
+
         UpdateMesh(vertices, colors);
         AnimateVerticesByScale();
     }
@@ -164,11 +168,36 @@ public class TerrainManager : MonoBehaviour
         terrain.SetTexture(tex);
         SetHeight(true);
     }
-    
+
+    public Vector3 GetPositionOnMapByLatLon(Helper.WGS84 limits, float lat, float lon)
+    {
+        double horizontalSize = limits.east - limits.west;
+        double verticalSize = limits.north - limits.south;
+
+        double auxLong = lon - limits.west;
+        double auxLat = lat - limits.south;
+
+        double calculatedX = terrain.GetTexture().width * auxLong / horizontalSize;
+        double calculatedY = terrain.GetTexture().height * auxLat / verticalSize;
+
+        Vector2 diffFromTex = terrain.GetDifferenceFromTexture();
+
+        if (centrilize)
+        {
+            calculatedX = calculatedX + diffFromTex.x;
+            calculatedY = calculatedY + diffFromTex.y;
+        }
+
+        float auxHeight = terrain.GetTexture().GetPixel((int)calculatedX, (int)calculatedY).r;
+
+        Vector3 pos = new Vector3((float)calculatedX, auxHeight * maxHeight, (float)calculatedY);
+        return pos;
+    }
+
     [Button]
     public void ColorizeWithGradient()
     {
-        mesh.colors = terrain.ColorizeVertices(gradient);
+        mesh.colors = terrain.ColorizeVertices(gradient, centrilize);
         mesh.UploadMeshData(false);
     }
 }

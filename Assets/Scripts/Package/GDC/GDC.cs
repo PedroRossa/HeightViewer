@@ -14,6 +14,7 @@ namespace Vizlab
         protected float longitude;
         protected List<GDCElement> elements;
         protected GameObject goModel;
+        protected Transform elementsContentTransform;
 
         public string Name { get => name; set => name = value; }
         public string Description { get => description; set => description = value; }
@@ -21,6 +22,7 @@ namespace Vizlab
         public float Longitude { get => longitude; set => longitude = value; }
         public List<GDCElement> Elements { get => elements; set => elements = value; }
         public GameObject GoModel { get => goModel; set => goModel = value; }
+        public Transform ElementsContentTransform { get => elementsContentTransform; set => elementsContentTransform = value; }
 
         #endregion
 
@@ -43,19 +45,16 @@ namespace Vizlab
             this.latitude = latitude;
             this.longitude = longitude;
             elements = new List<GDCElement>();
-            goModel = null;
+            goModel = Instantiate(Resources.Load("GDCRoot", typeof(GameObject)) as GameObject);
+
+            //Get second element of prefab to save future loaded elements
+            elementsContentTransform = goModel.transform.GetChild(1);
         }
 
         #endregion
-
-        /// <summary>
-        /// Set simple primitive as InteractiveModel.
-        /// Call after set all elements of the GDC
-        /// </summary>
-        /// <param name="modelType"></param>
-        public void SetInteractiveModel()
+        
+        public void ConfigureGDCRootObject()
         {
-            goModel = Instantiate(Resources.Load("GDCRoot", typeof(GameObject)) as GameObject);
             GDCRoot gdcRoot = goModel.GetComponent<GDCRoot>();
             gdcRoot.InitializeData(this);
         }

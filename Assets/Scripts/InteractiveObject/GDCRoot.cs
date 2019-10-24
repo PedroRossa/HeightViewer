@@ -117,11 +117,9 @@ public class GDCRoot : MonoBehaviour
                 break;
         }
     }
-
-    public void InitializeData(GDC gdc)
+    
+    private void InitalizeVariables()
     {
-        this.gdc = gdc;
-
         canvas = GetComponentInChildren<Canvas>();
 
         txtSampleNotificationCount = sampleNotificationBallon.GetComponentInChildren<TextMeshProUGUI>();
@@ -136,15 +134,26 @@ public class GDCRoot : MonoBehaviour
         sampleCount = 0;
         panoramicCount = 0;
         fileCount = 0;
-  
+
+    }
+
+    public void InitializeData(GDC gdc)
+    {
+        this.gdc = gdc;
+        InitalizeVariables();
+        
         foreach (GDCElement element in gdc.Elements)
         {
             switch (element.Type)
             {
                 case ElementType.Sample:
+                    //Update linerenderer of element
+                    interactionBehaviour.OnGraspStay += ((GDCElementSample)element).MovingElement;
                     sampleCount++;
                     break;
                 case ElementType.Panoramic:
+                    //Update linerenderer of element
+                    interactionBehaviour.OnGraspStay += ((GDCElementPanoramic)element).MovingElement;
                     panoramicCount++;
                     break;
                 case ElementType.File:
@@ -159,7 +168,7 @@ public class GDCRoot : MonoBehaviour
         UpdateNotificationBallon(ElementType.Panoramic, panoramicCount);
         UpdateNotificationBallon(ElementType.File, fileCount);
     }
-
+    
     [Button]
     public void SimulateGDC()
     {

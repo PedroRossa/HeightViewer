@@ -9,6 +9,7 @@ public class InteractiveCarrousel2D : MonoBehaviour
     public Transform contentTransform;
     public IconButton2D btnToLeft;
     public IconButton2D btnToRight;
+    public IconButton2D btnAction;
 
     private List<GameObject> elements = new List<GameObject>();
     private int currentElement = 0;
@@ -43,6 +44,15 @@ public class InteractiveCarrousel2D : MonoBehaviour
     
     private void UpdateCarrouselButton()
     {
+        if(numberOfElements <=0)
+        {
+            btnAction.DisableButton();
+        }
+        else
+        {
+            btnAction.EnableButton();
+        }
+
         //Manage buttons based on current element selected
         if(numberOfElements <= 1)
         {
@@ -66,7 +76,6 @@ public class InteractiveCarrousel2D : MonoBehaviour
             btnToLeft.EnableButton();
             btnToRight.DisableButton();
         }
-
     }
 
     private GameObject CreateCarrouselElement(string name, Sprite sprite = null)
@@ -175,7 +184,11 @@ public class InteractiveCarrousel2D : MonoBehaviour
     {
         return elements[currentElement - 1];
     }
-
+    
+    public int GetCurrentElementID()
+    {
+        return currentElement - 1;
+    }
 
     [Button]
     public void MockDataToCarrousel()

@@ -54,7 +54,7 @@ public class Terrain
         return differenceFromTexture;
     }
 
-    public Vector3[] CalculateVertices()
+    public Vector3[] CalculateVertices(bool centralized)
     {
         Vector3[] vertices = new Vector3[width * height];
         int diffX = (int)differenceFromTexture.x;
@@ -65,22 +65,38 @@ public class Terrain
             for (int j = 0; j < width; j++)
             {
                 int currIndex = j + i * width;
-                if ((j - diffX) < texture.width && j > diffX &&
-                    (i - diffY) < texture.height && i > diffY)
+                //centralize on the middle of the terrain
+                if (centralized)
                 {
-                    float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
-                    vertices[currIndex] = new Vector3(j, currHeight * maxHeight, i);
+                    if ((j - diffX) < texture.width && j > diffX &&
+                     (i - diffY) < texture.height && i > diffY)
+                    {
+                        float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
+                        vertices[currIndex] = new Vector3(j, currHeight * maxHeight, i);
+                    }
+                    else
+                    {
+                        vertices[currIndex] = new Vector3(j, 0, i);
+                    }
                 }
-                else
+                else //Load model on bottom of terrain
                 {
-                    vertices[currIndex] = new Vector3(j, 0, i);
+                    if (j < texture.width && i < texture.height)
+                    {
+                        float currHeight = texture.GetPixel(j, i).r;
+                        vertices[currIndex] = new Vector3(j, currHeight * maxHeight, i);
+                    }
+                    else
+                    {
+                        vertices[currIndex] = new Vector3(j, 0, i);
+                    }
                 }
             }
         }
         return vertices;
     }
-
-    public Color[] ColorizeVertices(Color color)
+    
+    public Color[] ColorizeVertices(Color color, bool centralized)
     {
         Color[] colors = new Color[width * height];
         int diffX = (int)differenceFromTexture.x;
@@ -91,23 +107,38 @@ public class Terrain
             for (int j = 0; j < width; j++)
             {
                 int currIndex = j + i * width;
-
-                if ((j - diffX) < texture.width && j > diffX &&
+                //centralize on the middle of the terrain
+                if (centralized)
+                {
+                    if ((j - diffX) < texture.width && j > diffX &&
                     (i - diffY) < texture.height && i > diffY)
-                {
-                    float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
-                    colors[currIndex] = color * currHeight;
+                    {
+                        float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
+                        colors[currIndex] = color * currHeight;
+                    }
+                    else
+                    {
+                        colors[currIndex] = new Color(0, 0, 0, 0);
+                    }
                 }
-                else
+                else //Load model on bottom of terrain
                 {
-                    colors[currIndex] = new Color(0, 0, 0, 0);
+                    if (j < texture.width && i < texture.height)
+                    {
+                        float currHeight = texture.GetPixel(j, i).r;
+                        colors[currIndex] = color * currHeight;
+                    }
+                    else
+                    {
+                        colors[currIndex] = new Color(0, 0, 0, 0);
+                    }
                 }
             }
         }
         return colors;
     }
 
-    public Color[] ColorizeVertices(Gradient gradient)
+    public Color[] ColorizeVertices(Gradient gradient, bool centralized)
     {
         Color[] colors = new Color[width * height];
         int diffX = (int)differenceFromTexture.x;
@@ -118,21 +149,36 @@ public class Terrain
             for (int j = 0; j < width; j++)
             {
                 int currIndex = j + i * width;
-
-                if ((j - diffX) < texture.width && j > diffX &&
+                //centralize on the middle of the terrain
+                if (centralized)
+                {
+                    if ((j - diffX) < texture.width && j > diffX &&
                     (i - diffY) < texture.height && i > diffY)
-                {
-                    float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
-                    colors[currIndex] = gradient.Evaluate(currHeight);
+                    {
+                        float currHeight = texture.GetPixel(j - diffX, i - diffY).r;
+                        colors[currIndex] = gradient.Evaluate(currHeight);
+                    }
+                    else
+                    {
+                        colors[currIndex] = new Color(0, 0, 0, 0);
+                    }
                 }
-                else
+                else //Load model on bottom of terrain
                 {
-                    colors[currIndex] = new Color(0, 0, 0, 0);
+                    if (j < texture.width && i < texture.height)
+                    {
+                        float currHeight = texture.GetPixel(j, i).r;
+                        colors[currIndex] = gradient.Evaluate(currHeight);
+                    }
+                    else
+                    {
+                        colors[currIndex] = new Color(0, 0, 0, 0);
+                    }
                 }
             }
         }
         return colors;
     }
-
+        
     #endregion
 }

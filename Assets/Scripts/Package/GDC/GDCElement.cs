@@ -28,6 +28,9 @@ namespace Vizlab
         public ElementType Type { get => type; set => type = value; }
         public string RelativePath { get => relativePath; set => relativePath = value; }
 
+        public Transform parentTransform;
+        public LineRenderer lineRenderer;
+
         #endregion
 
         #region Constructors

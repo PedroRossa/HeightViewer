@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using Leap.Unity.Interaction;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Vizlab
@@ -30,9 +33,10 @@ namespace Vizlab
             type = ElementType.Sample;
             relativePath = string.Empty;
             goModel = null;
+            parentTransform = null;
         }
 
-        public GDCElementSample(SO_PackageData.gdc_element element, string rootPath)
+        public GDCElementSample(SO_PackageData.gdc_element element, string rootPath, Transform parent = null)
         {
             name = element.name;
             description = element.description;
@@ -41,6 +45,7 @@ namespace Vizlab
             type = ElementType.Sample;
             relativePath = element.relativePath;
             goModel = null;
+            parentTransform = parent;
 
             LoadData(rootPath);
         }
@@ -77,8 +82,30 @@ namespace Vizlab
             if (!string.IsNullOrEmpty(texturePath) && !string.IsNullOrEmpty(modelPath))
             {
                 goModel = Helper.Load3DModel(name, modelPath, texturePath);
+
+                InteractionBehaviour ib = goModel.AddComponent<InteractionBehaviour>();
+                ib.OnGraspStay += MovingElement;
+
+                goModel.AddComponent<SphereCollider>();
+
+                goModel.GetComponent<Rigidbody>().isKinematic = true;
+                goModel.GetComponent<Rigidbody>().useGravity = false;
+
+                lineRenderer = Helper.CreateLineRendererOnObject(goModel, 0.0035f, Color.red);
+                
+                if (parentTransform != null)
+                {
+                    goModel.transform.SetParent(parentTransform);
+                }
+                
                 goModel.SetActive(false);
             }
+        }
+
+        public void MovingElement()
+        {
+            lineRenderer.SetPosition(0, goModel.transform.position);
+            lineRenderer.SetPosition(1, parentTransform.position);
         }
     }
 }

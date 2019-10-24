@@ -18,7 +18,7 @@ public class DebugMenuManager : MonoBehaviour
 
     public void LoadWorldMap()
     {
-        packageManager.LoadWorldMapTerrain();
+        packageManager.LoadPackages();
     }
 
     public void LoadPackage(int id)
