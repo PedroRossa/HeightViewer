@@ -91,7 +91,7 @@ namespace Vizlab
                 goModel.GetComponent<Rigidbody>().isKinematic = true;
                 goModel.GetComponent<Rigidbody>().useGravity = false;
 
-                lineRenderer = Helper.CreateLineRendererOnObject(goModel, 0.0035f, Color.red);
+                lineRenderer = Helper.CreateLineRendererOnObject(goModel, 0.0035f, Color.green);
                 
                 if (parentTransform != null)
                 {

@@ -17,8 +17,6 @@ public class InteractiveObject : MonoBehaviour
     private InteractionBehaviour interactionBehaviour;
     private Rigidbody rigidbody;
     private LineRenderer lineRenderer;
-    
-    private Pin3DElement pinElement;
 
     private void Awake()
     {
@@ -48,8 +46,8 @@ public class InteractiveObject : MonoBehaviour
 
         //put elementContainer inside of the rootObj
         elementContainer.transform.SetParent(rootObj.transform);
-        
-        pin = Instantiate(Resources.Load("PinObject", typeof(GameObject)) as GameObject);
+
+        pin = new GameObject("worldPosition");
         //put pin insde of rootObj
         pin.transform.SetParent(rootObj.transform);
 
@@ -86,17 +84,17 @@ public class InteractiveObject : MonoBehaviour
     {
         CreatePrefabStructure();
         InitializeObject();
-
-        pinElement = pin.GetComponent<Pin3DElement>();
-        lineRenderer = Helper.CreateLineRendererOnObject(this.gameObject, lineRendererWidth, lineRendererColor);
-        MovingElement();
-
-        interactionBehaviour.OnGraspStay += MovingElement;
+        
+        lineRenderer = Helper.CreateLineRendererOnObject(this.gameObject, lineRendererWidth*0.5f, lineRendererWidth, lineRendererColor, lineRendererColor);
+        lineRenderer.SetPosition(0, pin.transform.position);
+        lineRenderer.SetPosition(1, element.transform.position);
+        
+        interactionBehaviour.OnGraspStay += RefreshLineRenderer;
     }
     
-    private void MovingElement()
+    public void RefreshLineRenderer()
     {
-        lineRenderer.SetPosition(0, pinElement.anchorPosition.position);
+        lineRenderer.SetPosition(0, pin.transform.position);
         lineRenderer.SetPosition(1, element.transform.position);
     }
 

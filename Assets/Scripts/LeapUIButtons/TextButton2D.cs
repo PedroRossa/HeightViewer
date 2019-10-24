@@ -1,21 +1,22 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using MaterialUI;
 using Leap.Unity.Interaction;
 
 [RequireComponent(typeof(InteractionButton))]
-public class IconButton2D : MonoBehaviour
+public class TextButton2D : MonoBehaviour
 {
-    public VectorImage imgBackground;
-    public VectorImage imgIcon;
+    public Image imgBackground;
+    public Text txtTextValue;
 
-    public Color defaultColor = new Color(0,0,0,0);
+    public Color defaultColor = new Color(0, 0, 0, 0);
     public Color hoverColor = Color.gray;
     public Color contactColor = Color.green;
 
     private InteractionButton interactionButton;
     private Rigidbody rigidbody;
 
-    private Color imgIconColor;
+    private Color txtTextColor;
 
     private void Awake()
     {
@@ -34,7 +35,7 @@ public class IconButton2D : MonoBehaviour
         interactionButton.OnContactBegin += ContactBegin;
         interactionButton.OnContactEnd += ContactEnd;
 
-        imgIconColor = imgIcon.color;
+        txtTextColor = txtTextValue.color;
     }
 
     private void PrimaryHoverBegin()
@@ -60,12 +61,12 @@ public class IconButton2D : MonoBehaviour
     public void DisableButton()
     {
         interactionButton.enabled = false;
-        imgIcon.color = Color.gray;
+        txtTextValue.color = Color.gray;
     }
 
     public void EnableButton()
     {
         interactionButton.enabled = true;
-        imgIcon.color = imgIconColor;
+        txtTextValue.color = txtTextColor;
     }
 }

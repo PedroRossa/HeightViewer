@@ -69,6 +69,8 @@ public class PackageManager : MonoBehaviour
         //then put element out to correct scale
         io.SetParent(loadedElementsTransform);
         io.SetModelScale(0.035f);
+
+        io.RefreshLineRenderer();
     }
 
     private void CreateGDCs()
@@ -180,10 +182,17 @@ public class PackageManager : MonoBehaviour
             rootPath = SO_PackageData.SelectPackage(item + "\\gdcPackage.json");
             SO_PackageData.Init();
             
-            GameObject go = Instantiate(Resources.Load("PinObject", typeof(GameObject)) as GameObject);
+            GameObject go = Instantiate(Resources.Load("PackagePin", typeof(GameObject)) as GameObject);
 
             Package package = go.AddComponent<Package>();
+            
             package.Initialize(SO_PackageData.instance);
+            package.SetFullPath(item + "\\gdcPackage.json");
+
+            //Get PackagePin script to Load data to Prefab
+            PackagePin packagePin = go.GetComponent<PackagePin>();
+            packagePin.LoadPanel(this, package);
+
 
             go.name = "PIN_" + package.name;
             
@@ -198,7 +207,6 @@ public class PackageManager : MonoBehaviour
 
             //then put element out to correct scale
             go.transform.SetParent(loadedElementsTransform);
-            go.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
             packages.Add(package);
         }

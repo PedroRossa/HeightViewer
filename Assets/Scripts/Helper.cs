@@ -543,6 +543,26 @@ public class Helper : MonoBehaviour
 
         return lineRenderer;
     }
+
+    public static LineRenderer CreateLineRendererOnObject(GameObject go, float startWidth, float endWidth, Color startColor, Color endColor)
+    {
+        LineRenderer lineRenderer = go.AddComponent<LineRenderer>();
+
+        lineRenderer.useWorldSpace = true;
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+
+        lineRenderer.startWidth = startWidth;
+        lineRenderer.endWidth = endWidth;
+
+        lineRenderer.startColor = startColor;
+        lineRenderer.endColor = endColor;
+
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, Vector3.zero);
+        lineRenderer.SetPosition(1, Vector3.zero);
+
+        return lineRenderer;
+    }
 }
 
 

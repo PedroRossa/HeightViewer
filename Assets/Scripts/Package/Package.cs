@@ -12,6 +12,8 @@ public class Package : MonoBehaviour
     public string boundries;
     public gdc_data[] gdcs;
 
+    public string fullPath;
+
     public void Initialize(SO_PackageData data)
     {
         name = data.name;
@@ -22,5 +24,10 @@ public class Package : MonoBehaviour
         kmlPath = data.kmlPath;
         boundries = data.boundries;
         gdcs = data.gdcs;
+    }
+
+    public void SetFullPath(string path)
+    {
+        fullPath = path;
     }
 }
