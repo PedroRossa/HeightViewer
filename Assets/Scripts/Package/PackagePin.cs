@@ -41,7 +41,9 @@ public class PackagePin : MonoBehaviour
         chkKMLFile.isOn = !string.IsNullOrEmpty(package.kmlPath);
 
         //Set event to load this package using Package Manager
+        btnLoadPackage.OnContactEnd = null;
         btnLoadPackage.OnContactEnd += LoadPackage;
+        btnLoadPackage.enabled = true;
 
         //If panel start's deactivated, return it's to original state
         if (!currPanelState)
@@ -53,6 +55,8 @@ public class PackagePin : MonoBehaviour
     private void LoadPackage()
     {
         packageManager.LoadPackage(packageFullPath);
+        //disable panel after call function to aviod multipe loads
+        panelObject.SetActive(false);
     }
 
     public void TogglePanel()

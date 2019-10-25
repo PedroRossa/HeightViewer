@@ -24,6 +24,8 @@ public class TooltipElement : MonoBehaviour
             interactionButton.OnContactBegin += HideTooltip;
             interactionButton.OnPrimaryHoverEnd += HideTooltip;
         }
+
+        gameObject.SetActive(false);
     }
 
     public void SetText(string text)

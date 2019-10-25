@@ -22,7 +22,6 @@ public class PackageManager : MonoBehaviour
     private List<GDC> loadedGDCs = new List<GDC>();
     private GameObject route;
 
-
     private void CreateLineRendererRoute()
     {
         if (string.IsNullOrEmpty(SO_PackageData.instance.kmlPath))
@@ -229,7 +228,8 @@ public class PackageManager : MonoBehaviour
         //limits are got on geotif reading
 
         CreateGDCs();
-        CreateLineRendererRoute();
+
+        //CreateLineRendererRoute();
     }
 
     [Button]
@@ -249,7 +249,8 @@ public class PackageManager : MonoBehaviour
         //limits are got on geotif reading
 
         CreateGDCs();
-        CreateLineRendererRoute();
+
+        //CreateLineRendererRoute();
     }
 
     [Button]
