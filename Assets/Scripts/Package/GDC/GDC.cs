@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Vizlab
 {
     //GDC Geo-referenced Data Container
-    public class GDC : MonoBehaviour
+    public class GDC
     {
         #region Attributes
 
@@ -45,7 +45,7 @@ namespace Vizlab
             this.latitude = latitude;
             this.longitude = longitude;
             elements = new List<GDCElement>();
-            goModel = Instantiate(Resources.Load("GDCRoot", typeof(GameObject)) as GameObject);
+            goModel = Helper.LoadPrefabFromResources(name, "GDCRoot");
 
             //Get second element of prefab to save future loaded elements
             elementsContentTransform = goModel.transform.GetChild(1);

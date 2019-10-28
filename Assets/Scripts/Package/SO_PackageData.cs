@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using SFB;
 
 using UnityEngine;
 
@@ -81,17 +80,6 @@ public class SO_PackageData : ScriptableObject
     {
         instance = Resources.Load("SO_PackageData", typeof(SO_PackageData)) as SO_PackageData;
         instance.Load();
-    }
-
-    public static string SelectPackageFromFileBrowser()
-    {
-        fullPackagePath = StandaloneFileBrowser.OpenFilePanel("Select a JSON", "", "json", false)[0];
-        PlayerPrefs.SetString("SAVED_DATA", System.IO.File.ReadAllText(fullPackagePath));
-
-        string fileName = Path.GetFileName(fullPackagePath);
-        rootPath = fullPackagePath.Replace(fileName, "");
-
-        return rootPath;
     }
 
     public static string SelectPackage(string path)

@@ -1,4 +1,5 @@
 ﻿using NaughtyAttributes;
+using SFB;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -54,7 +55,7 @@ public class PackageManager : MonoBehaviour
 
         lr.Simplify(5);
     }
-    
+
     private void AddInteractiveObjectToGDC(ref GDC gdc)
     {
         Vector3 pos = terrainManager.GetPositionOnMapByLatLon(limits, gdc.Latitude, gdc.Longitude);
@@ -74,6 +75,7 @@ public class PackageManager : MonoBehaviour
 
     private void CreateGDCs()
     {
+        Debug.Log("Start Creation of GDC's");
         foreach (SO_PackageData.gdc_data item in SO_PackageData.instance.gdcs)
         {
             GDC gdc = new GDC(item.name, item.description, item.latitude, item.longitude);
@@ -92,7 +94,7 @@ public class PackageManager : MonoBehaviour
                         break;
                     case ElementType.Panoramic:
                         newElement = new GDCElementPanoramic(currElement, rootPath, gdc.ElementsContentTransform);
-                         break;
+                        break;
                     case ElementType.File:
                         newElement = new GDCElementFile(currElement, rootPath, gdc.ElementsContentTransform);
                         //((GDCElementFile)newElement).GoFile.transform.SetParent(gdc.ElementsContentTransform);
@@ -119,7 +121,14 @@ public class PackageManager : MonoBehaviour
 
         StartCoroutine(OpenTopographyAPI.DownloadGeoTiff(element, "C:/", "myFile", DownloadedGeoTiffCallback));
     }
-    
+
+    private void LoadWorldMap()
+    {
+        //Load world heightmap texture 
+        Texture2D tex = Resources.Load("worldHeightMap", typeof(Texture2D)) as Texture2D;
+        terrainManager.LoadTerrain(tex);
+    }
+
 
     public void DownloadedGeoTiffCallback(string path, int responseCode)
     {
@@ -143,14 +152,45 @@ public class PackageManager : MonoBehaviour
         loadingFinished = true;
     }
 
+    public void LoadPackage(string path)
+    {
+        ClearScene();
+        rootPath = SO_PackageData.SelectPackage(path);
+        SO_PackageData.Init();
+
+        //If the package don't contains a geotiff image, load packages on worldMap
+        if (string.IsNullOrEmpty(SO_PackageData.instance.geoTiffPath))
+        {
+            limits = new Helper.WGS84(-180, -90, 180, 90);
+            LoadWorldMap();
+        }
+        else
+        {
+            //Read Geotiff image downloaded, set the coordinates and the heightTexture
+            Texture2D tex;
+
+            Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
+            terrainManager.LoadTerrain(tex);
+        }
+
+        CreateGDCs();
+        //CreateLineRendererRoute();
+    }
+
+
+    [Button]
+    public void LoadPackage()
+    {
+        string fullPackagePath = StandaloneFileBrowser.OpenFilePanel("Select a JSON", "", "json", false)[0];
+        LoadPackage(fullPackagePath);
+    }
 
     //Function to read folder with packages and create content inside of project
     [Button]
     public void LoadPackages()
     {
-        //Load world heightmap texture 
-        Texture2D tex = Resources.Load("worldHeightMap", typeof(Texture2D)) as Texture2D;
-        terrainManager.LoadTerrain(tex);
+        ClearScene();
+        LoadWorldMap();
 
         string root = "";
 #if UNITY_EDITOR
@@ -180,11 +220,11 @@ public class PackageManager : MonoBehaviour
             //Get Json properties using SO
             rootPath = SO_PackageData.SelectPackage(item + "\\gdcPackage.json");
             SO_PackageData.Init();
-            
+
             GameObject go = Instantiate(Resources.Load("PackagePin", typeof(GameObject)) as GameObject);
 
             Package package = go.AddComponent<Package>();
-            
+
             package.Initialize(SO_PackageData.instance);
             package.SetFullPath(item + "\\gdcPackage.json");
 
@@ -194,7 +234,7 @@ public class PackageManager : MonoBehaviour
 
 
             go.name = "PIN_" + package.name;
-            
+
             Helper.WGS84 worldLimits = new Helper.WGS84(-180, -90, 180, 90);
             float lat = package.latitude;
             float lon = package.longitude;
@@ -209,48 +249,6 @@ public class PackageManager : MonoBehaviour
 
             packages.Add(package);
         }
-    }
-
-
-    public void LoadPackage(string path)
-    {
-        ClearScene();
-        rootPath = SO_PackageData.SelectPackage(path);
-        SO_PackageData.Init();
-
-        //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
-
-        //Read Geotiff image downloaded, set the coordinates and the heightTexture
-        Texture2D tex;
-        Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
-        terrainManager.LoadTerrain(tex);
-
-        //limits are got on geotif reading
-
-        CreateGDCs();
-
-        //CreateLineRendererRoute();
-    }
-
-    [Button]
-    public void LoadPackage()
-    {
-        ClearScene();
-        rootPath = SO_PackageData.SelectPackageFromFileBrowser();
-        SO_PackageData.Init();
-
-        //Texture2D tex = Helper.LoadImageAsTexture(rootPath + SO_PackageData.instance.heightMapPath);
-
-        //Read Geotiff image downloaded, set the coordinates and the heightTexture
-        Texture2D tex;
-        Helper.LoadGeotiffData(rootPath + SO_PackageData.instance.geoTiffPath, out limits, out tex);
-        terrainManager.LoadTerrain(tex);
-
-        //limits are got on geotif reading
-
-        CreateGDCs();
-
-        //CreateLineRendererRoute();
     }
 
     [Button]

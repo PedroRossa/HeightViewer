@@ -4,6 +4,12 @@ using UnityEngine;
 
 namespace Vizlab
 {
+    public enum AUDIO_TYPE
+    {
+        MP3,
+        WAV
+    }
+
     class GDCElementFile : GDCElement
     {
         #region Attributes
@@ -62,35 +68,47 @@ namespace Vizlab
                     //TODO: Load gameObject as image
                     //goFile = Helper.LoadImageAsTexture(filePath);
                     break;
-                case ".mp3":
                 case ".wav":
+                    goFile = Helper.LoadAudioClip(name, filePath, AUDIO_TYPE.WAV);
                     //TODO: Load gameObject as audioClip
                     break;
-                    case ".pdf":
+                case ".mp3":
+                    goFile = Helper.LoadAudioClip(name, filePath, AUDIO_TYPE.MP3);
+                    break;
+                case ".pdf":
                     //TODO: Load gameobject as pdf
                     break;
                 case ".txt":
                     //TODO: Load gameobject as text
-
+                    break;
                 default:
                     Debug.Log("Unknown extension detected on panoramic element object. Extension: " + extension);
                     break;
             }
-            //goFile = Helper.LoadPanoramicImage(name, filePath);
-            //goFile.AddComponent<InteractionBehaviour>();
-            //goFile.AddComponent<SphereCollider>();
 
-            //goFile.GetComponent<Rigidbody>().isKinematic = true;
-            //goFile.GetComponent<Rigidbody>().useGravity = false;
+            if(goFile == null)
+            {
+                return;
+            }
 
-            //Helper.CreateLineRendererOnObject(goFile, 0.01f, Color.blue);
+            InteractionBehaviour ib = goFile.AddComponent<InteractionBehaviour>();
+            ib.OnGraspStay += MovingElement;
 
-            //if (parentTransform != null)
-            //{
-            //    goFile.transform.SetParent(parentTransform);
-            //}
+            Helper.CreateLineRendererOnObject(goFile, 0.01f, Color.blue);
 
-            //goFile.SetActive(false);
+            if (parentTransform != null)
+            {
+                goFile.transform.SetParent(parentTransform);
+                goFile.transform.localScale = Vector3.one * 20;
+            }
+
+            goFile.SetActive(false);
+        }
+
+        public void MovingElement()
+        {
+            lineRenderer.SetPosition(0, goFile.transform.position);
+            lineRenderer.SetPosition(1, parentTransform.position);
         }
     }
 }

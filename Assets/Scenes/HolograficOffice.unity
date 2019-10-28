@@ -573,7 +573,8 @@ PrefabInstance:
       propertyPath: enabledPrimaryHoverFingertips.Array.data[2]
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 114685367921167028, guid: 33edf201cbc6fe645ad9078697cd2aea, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 33edf201cbc6fe645ad9078697cd2aea, type: 3}
 --- !u!1001 &184742733
 PrefabInstance:
@@ -7855,6 +7856,16 @@ PrefabInstance:
       propertyPath: _OnUnpress.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1783791698}
+    - target: {fileID: 1142670643211416790, guid: c4598e30e89d4ee4d8fdae53431271d2,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2695943681939177237, guid: c4598e30e89d4ee4d8fdae53431271d2,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4598e30e89d4ee4d8fdae53431271d2, type: 3}
 --- !u!1001 &4682091372745863372

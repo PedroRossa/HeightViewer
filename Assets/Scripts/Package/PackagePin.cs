@@ -14,10 +14,18 @@ public class PackagePin : MonoBehaviour
     public Toggle chkHeightmap;
     public Toggle chkKMLFile;
     public Text txtGDCsCount;
-    public InteractionButton btnLoadPackage;
+    public TextButton2D btnLoadPackage;
 
     private PackageManager packageManager;
     private string packageFullPath;
+
+    private void Awake()
+    {
+        //Set event to load this package using Package Manager
+
+        //Added on prefab because when set on script enter in a infinite loop
+        //btnLoadPackage.GetComponent<InteractionButton>().OnContactEnd += LoadPackage;
+    }
 
     public void LoadPanel(PackageManager packageManager, Package package)
     {
@@ -40,10 +48,6 @@ public class PackagePin : MonoBehaviour
         chkHeightmap.isOn = !string.IsNullOrEmpty(package.geoTiffPath);
         chkKMLFile.isOn = !string.IsNullOrEmpty(package.kmlPath);
 
-        //Set event to load this package using Package Manager
-        btnLoadPackage.OnContactEnd = null;
-        btnLoadPackage.OnContactEnd += LoadPackage;
-        btnLoadPackage.enabled = true;
 
         //If panel start's deactivated, return it's to original state
         if (!currPanelState)
@@ -52,11 +56,11 @@ public class PackagePin : MonoBehaviour
         }
     }
 
-    private void LoadPackage()
-    {
+    //TODO: This function is called in a infinite loop. For now, it's removed the event of OnContactEnd of the button
+    //that call's this function
+    public void LoadPackage()
+    { 
         packageManager.LoadPackage(packageFullPath);
-        //disable panel after call function to aviod multipe loads
-        panelObject.SetActive(false);
     }
 
     public void TogglePanel()

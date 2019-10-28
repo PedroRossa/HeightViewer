@@ -40,22 +40,34 @@ public class TextButton2D : MonoBehaviour
 
     private void PrimaryHoverBegin()
     {
-        imgBackground.color = hoverColor;
+        if (imgBackground != null)
+        {
+            imgBackground.color = hoverColor;
+        }
     }
 
     private void PrimaryHoverEnd()
     {
-        imgBackground.color = defaultColor;
+        if (imgBackground != null)
+        {
+            imgBackground.color = defaultColor;
+        }
     }
 
     private void ContactBegin()
     {
-        imgBackground.color = contactColor;
+        if (imgBackground != null)
+        {
+            imgBackground.color = contactColor;
+        }
     }
 
     private void ContactEnd()
     {
-        imgBackground.color = hoverColor;
+        if (imgBackground != null)
+        {
+            imgBackground.color = hoverColor;
+        }
     }
 
     public void DisableButton()

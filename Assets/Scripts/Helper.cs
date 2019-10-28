@@ -10,6 +10,7 @@ using Atlas.IO;
 using SkiaSharp;
 using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
+using UnityEngine.Networking;
 
 public class Helper : MonoBehaviour
 {
@@ -139,47 +140,47 @@ public class Helper : MonoBehaviour
     {
         try
         {
-        Gdal.AllRegister();
+            Gdal.AllRegister();
 
-        Dataset rasterDataset = Gdal.Open(path, Access.GA_ReadOnly);
-        if (rasterDataset == null)
-        {
-            Debug.Log("Unable to read input raster..");
-        }
-        //raster bands  
-        int bandCount = rasterDataset.RasterCount;
-        if (bandCount > 1)
-        {
-            Debug.Log("Input error, please provide single band raster image only..");
-        }
+            Dataset rasterDataset = Gdal.Open(path, Access.GA_ReadOnly);
+            if (rasterDataset == null)
+            {
+                Debug.Log("Unable to read input raster..");
+            }
+            //raster bands  
+            int bandCount = rasterDataset.RasterCount;
+            if (bandCount > 1)
+            {
+                Debug.Log("Input error, please provide single band raster image only..");
+            }
 
-        //raster size  
-        int rasterCols = rasterDataset.RasterXSize;
-        int rasterRows = rasterDataset.RasterYSize;
+            //raster size  
+            int rasterCols = rasterDataset.RasterXSize;
+            int rasterRows = rasterDataset.RasterYSize;
 
-        //Extract geotransform  
-        double[] geotransform = new double[6];
-        rasterDataset.GetGeoTransform(geotransform);
+            //Extract geotransform  
+            double[] geotransform = new double[6];
+            rasterDataset.GetGeoTransform(geotransform);
 
-        //Get raster bounding box  
-        double originX = geotransform[0];
-        double originY = geotransform[3];
-        double pixelWidth = geotransform[1];
-        double pixelHeight = geotransform[5];
+            //Get raster bounding box  
+            double originX = geotransform[0];
+            double originY = geotransform[3];
+            double pixelWidth = geotransform[1];
+            double pixelHeight = geotransform[5];
 
-        //Calculate box
-        double finalX = originX + (rasterCols * pixelWidth);
-        double finalY = originY + (rasterRows * pixelHeight);
+            //Calculate box
+            double finalX = originX + (rasterCols * pixelWidth);
+            double finalY = originY + (rasterRows * pixelHeight);
 
-        coordinates.west = originX;
-        coordinates.south = finalY;
-        coordinates.east = finalX;
-        coordinates.north = originY;
+            coordinates.west = originX;
+            coordinates.south = finalY;
+            coordinates.east = finalX;
+            coordinates.north = originY;
 
-        //Read 1st band from raster  
-        band = rasterDataset.GetRasterBand(1);
-        int rastWidth = rasterCols;
-        int rastHeight = rasterRows;
+            //Read 1st band from raster  
+            band = rasterDataset.GetRasterBand(1);
+            int rastWidth = rasterCols;
+            int rastHeight = rasterRows;
 
         }
         catch (Exception e)
@@ -275,7 +276,7 @@ public class Helper : MonoBehaviour
 
         List<Vector3> positions = new List<Vector3>();
         int count = 0;
-        
+
         List<KMLPlacemark> placemarks = ReadKMLFile(kmlPath);
         foreach (KMLPlacemark item in placemarks)
         {
@@ -400,6 +401,14 @@ public class Helper : MonoBehaviour
         return texture;
     }
 
+    public static GameObject LoadPrefabFromResources(string name, string path)
+    {
+        GameObject go = Instantiate(Resources.Load(path) as GameObject);
+        go.name = name;
+
+        return go;
+    }
+
     public static GameObject Load3DModel(string name, string modelPath, string texturePath)
     {
         GameObject go = new GameObject(name);
@@ -444,6 +453,20 @@ public class Helper : MonoBehaviour
 
         return go;
     }
+
+    public static GameObject LoadAudioClip(string name, string audioPath, Vizlab.AUDIO_TYPE audioType)
+    {
+        GameObject go = Instantiate(Resources.Load("PackageFilePanels/FilePanel_AudioObject") as GameObject);
+        go.name = name;
+
+        FilePanel_Audio fpa = go.GetComponent<FilePanel_Audio>();
+        fpa.Initialize();
+        fpa.SetTextTitle(name);
+        fpa.LoadAudioFromPath(name, audioPath, audioType);
+
+        return go;
+    }
+
 
 
     public static void UnzipFile(string zipPath)
