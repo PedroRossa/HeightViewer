@@ -91,10 +91,11 @@ namespace Vizlab
                 return;
             }
 
-            InteractionBehaviour ib = goFile.AddComponent<InteractionBehaviour>();
+            //FilePrefab already have the interaction behaviour
+            InteractionBehaviour ib = goFile.GetComponent<InteractionBehaviour>();
             ib.OnGraspStay += MovingElement;
 
-            Helper.CreateLineRendererOnObject(goFile, 0.01f, Color.blue);
+            lineRenderer = Helper.CreateLineRendererOnObject(goFile, 0.0035f, Color.blue);
 
             if (parentTransform != null)
             {
@@ -102,7 +103,8 @@ namespace Vizlab
                 goFile.transform.localScale = Vector3.one * 20;
             }
 
-            goFile.SetActive(false);
+            //TODO: SOLVE HERE!
+            //goFile.SetActive(false);
         }
 
         public void MovingElement()

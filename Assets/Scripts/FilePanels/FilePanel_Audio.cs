@@ -67,7 +67,7 @@ public class FilePanel_Audio : FilePanel
         switch (audioType)
         {
             case Vizlab.AUDIO_TYPE.MP3:
-                StartCoroutine(LoadAudioFile(name, path, AudioType.MPEG));
+                //StartCoroutine(LoadAudioFile(name, path, AudioType.MPEG));
                 break;
             case Vizlab.AUDIO_TYPE.WAV:
                 StartCoroutine(LoadAudioFile(name, path, AudioType.WAV));
@@ -82,11 +82,11 @@ public class FilePanel_Audio : FilePanel
     {
         Debug.Log("Start to load audio file " + name);
         Debug.Log("Path " + path);
-
+        
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, type))
         {
             yield return www.SendWebRequest();
-
+            
             if (www.isNetworkError || www.isHttpError)
             {
                 Debug.Log(www.error);
