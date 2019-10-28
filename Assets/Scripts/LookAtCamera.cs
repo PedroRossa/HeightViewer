@@ -2,6 +2,8 @@
 
 public class LookAtCamera : MonoBehaviour
 {
+    public bool forceUp = false;
+    public bool invertFoward = false;
     void Update()
     {
         Look();
@@ -9,7 +11,13 @@ public class LookAtCamera : MonoBehaviour
 
     private void Look()
     {
-        transform.LookAt(Camera.main.transform);
+        if (!forceUp)
+            transform.LookAt(Camera.main.transform);
+        else
+            transform.LookAt(Camera.main.transform, Vector3.up);
+
+        if (invertFoward)
+            transform.forward = -transform.forward;
     }
 
 }
